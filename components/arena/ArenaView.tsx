@@ -355,11 +355,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
           {/* Syntheses Header */}
           <div className="text-center space-y-4">
             <div className="inline-block">
-              <h2 
-                className="text-2xl md:text-4xl font-bold mb-2 arcade-title" 
-                style={{fontFamily: 'Orbitron, sans-serif'}}
-                data-text="SYNTHESES UNLOCKED"
-              >
+              <h2 className="text-2xl md:text-4xl font-bold mb-2 neon-header-pink">
                 💎 SYNTHESES UNLOCKED 💎
               </h2>
               <div className="h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />

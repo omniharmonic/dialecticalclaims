@@ -31,7 +31,7 @@ export default async function FightersPage() {
     <div className="arena-container min-h-screen">
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold font-serif mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 neon-header">
             Select Your Fighters
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

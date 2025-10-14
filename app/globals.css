@@ -157,7 +157,7 @@
 
   /* Neon text effects */
   .neon-text {
-    text-shadow: 
+    text-shadow:
       0 0 10px rgba(0, 255, 255, 0.8),
       0 0 20px rgba(0, 255, 255, 0.5),
       0 0 30px rgba(0, 255, 255, 0.3),
@@ -165,7 +165,35 @@
   }
 
   .neon-text-pink {
-    text-shadow: 
+    text-shadow:
+      0 0 10px rgba(255, 0, 255, 0.8),
+      0 0 20px rgba(255, 0, 255, 0.5),
+      0 0 30px rgba(255, 0, 255, 0.3);
+  }
+
+  /* Clean neon header - readable Orbitron with glow */
+  .neon-header {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    text-shadow:
+      0 0 10px rgba(0, 255, 255, 0.8),
+      0 0 20px rgba(0, 255, 255, 0.5),
+      0 0 30px rgba(0, 255, 255, 0.3);
+  }
+
+  .neon-header-purple {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    text-shadow:
+      0 0 10px rgba(168, 85, 247, 0.8),
+      0 0 20px rgba(168, 85, 247, 0.5),
+      0 0 30px rgba(168, 85, 247, 0.3);
+  }
+
+  .neon-header-pink {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    text-shadow:
       0 0 10px rgba(255, 0, 255, 0.8),
       0 0 20px rgba(255, 0, 255, 0.5),
       0 0 30px rgba(255, 0, 255, 0.3);

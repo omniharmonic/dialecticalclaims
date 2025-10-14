@@ -68,7 +68,7 @@ export default function ThesisPage() {
     <div className="arena-container min-h-screen">
       <div className="container mx-auto px-4 py-8 md:py-16 max-w-4xl">
         <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold font-serif mb-4">Choose Your Thesis</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 neon-header-pink">Choose Your Thesis</h1>
           <p className="text-lg text-muted-foreground">
             Define the philosophical claim that will spark the dialectical duel
           </p>

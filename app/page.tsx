@@ -13,12 +13,12 @@ export default function HomePage() {
             </span>
           </div>
           
-          <h1 className="arcade-title text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-6" data-text="DIALECTICAL.CLAIMS">
+          <h1 className="neon-header text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-6 uppercase tracking-wider">
             DIALECTICAL.CLAIMS
           </h1>
           
           <div className="relative inline-block mb-6">
-            <p className="text-base sm:text-xl md:text-2xl mb-2 neon-text" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.1em'}}>
+            <p className="text-base sm:text-xl md:text-2xl mb-2 neon-header-purple">
               ⚔️ THE ARENA OF SYNTHETIC THOUGHT ⚔️
             </p>
             <div className="h-1 w-full bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
@@ -56,7 +56,7 @@ export default function HomePage() {
                 <span className="text-2xl sm:text-4xl">🥋</span>
               </div>
             </div>
-            <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-primary" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.05em'}}>
+            <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 neon-header">
               SELECT FIGHTER
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
@@ -72,7 +72,7 @@ export default function HomePage() {
                 <span className="text-2xl sm:text-4xl">⚔️</span>
               </div>
             </div>
-            <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-accent" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.05em'}}>
+            <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 neon-header-purple">
               ENTER ARENA
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
@@ -88,7 +88,7 @@ export default function HomePage() {
                 <span className="text-2xl sm:text-4xl">💎</span>
               </div>
             </div>
-            <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-secondary" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.05em'}}>
+            <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 neon-header-pink">
               CLAIM SYNTHESIS
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
