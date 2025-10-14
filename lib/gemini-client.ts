@@ -26,12 +26,10 @@ const SYNTHESIS_CONFIG = {
 }
 
 // Get model for dialectic generation (streaming)
-// Using stable 1.5-flash for better free tier limits:
-// - 15 requests/min vs 10 for experimental
-// - 1,500 requests/day vs 50 for experimental
+// Using Gemini 2.5 Flash for best performance and quality
 export function getDialecticModel() {
   return genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.5-flash',
     generationConfig: GENERATION_CONFIG,
     safetySettings: [
       {
@@ -57,7 +55,7 @@ export function getDialecticModel() {
 // Get model for synthesis generation
 export function getSynthesisModel() {
   return genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.5-flash',
     generationConfig: SYNTHESIS_CONFIG,
     safetySettings: [
       {
