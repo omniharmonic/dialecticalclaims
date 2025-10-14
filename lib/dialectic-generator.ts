@@ -36,9 +36,9 @@ function repairJsonStructure(jsonStr: string): string {
   }
 
   // Try to repair incomplete JSON by adding missing closing braces/brackets
-  let openBraces = (repaired.match(/{/g) || []).length
+  const openBraces = (repaired.match(/{/g) || []).length
   let closeBraces = (repaired.match(/}/g) || []).length
-  let openBrackets = (repaired.match(/\[/g) || []).length
+  const openBrackets = (repaired.match(/\[/g) || []).length
   let closeBrackets = (repaired.match(/]/g) || []).length
 
   // Add missing closing braces
@@ -548,7 +548,7 @@ Respond with ONLY the JSON object, nothing else:`
     try {
       parsed = JSON.parse(cleaned)
     } catch (parseError) {
-      console.warn('Initial parse failed, attempting repair:', parseError)
+      // Initial parse failed, attempting repair
       // Try more aggressive repairs
       cleaned = repairJsonStructure(cleaned)
       parsed = JSON.parse(cleaned)
@@ -570,7 +570,7 @@ Respond with ONLY the JSON object, nothing else:`
     throw new Error('Template response received')
 
   } catch (error) {
-    console.error('Synthesis generation failed:', error)
+    // Synthesis generation failed, using analytical fallback
 
     // Generate a much better fallback that actually analyzes the conversation
     return generateAnalyticalFallbackSyntheses(conversationHistory, thesis, fighter1, fighter2)
