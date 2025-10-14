@@ -140,16 +140,15 @@ async function generateFighterResponse(
     onChunk,
   } = options
 
-  // Build dialectically-structured prompt
+  // Build the prompt - keep it natural and conversational
   let prompt = `${fighter.system_prompt}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DIALECTICAL COMBAT: ROUND ${roundNumber} OF ${totalRounds}
+ROUND ${roundNumber} OF ${totalRounds}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-ORIGINAL THESIS: "${originalThesis}"
+THESIS UNDER DEBATE: "${originalThesis}"
 YOUR OPPONENT: ${opponentName}
-YOUR DIALECTICAL ROLE THIS ROUND: ${dialecticalMove.toUpperCase().replace(/-/g, ' ')}
 
 `
 
@@ -167,116 +166,59 @@ ${recentHistory.map((exchange, i) => {
 `
   }
 
-  // Generate move-specific instructions
+  // Generate move-specific instructions that guide without being heavy-handed
   switch (dialecticalMove) {
     case 'initial-thesis':
-      prompt += `━━━ YOUR TASK: ESTABLISH INITIAL THESIS ━━━
+      prompt += `This is the opening of the exchange. Stake your claim on this thesis clearly and passionately. What do you think about it? Why? Draw on your philosophical commitments and make your position compelling.
 
-You are presenting the OPENING POSITION in this dialectical exchange.
+Respond as yourself - not as a narrator of the dialectic, but as a thinker engaging with this provocative claim.
 
-YOUR MANDATE:
-1. Take a clear, definitive stance on the original thesis
-2. State whether you AFFIRM, DENY, or COMPLICATE it
-3. Ground your position in your philosophical framework
-4. Articulate the key principles at stake
-5. Provide compelling reasons for your position
-
-CRITICAL: Be bold and clear. Your opponent will expose contradictions in what you say, so make your position coherent and defensible. This is the foundation upon which the entire dialectic will build.
-
-Length: 2-3 substantial paragraphs
-Tone: Assertive, philosophically rigorous, establishing your ground`
+Length: 2-3 paragraphs`
       break
 
     case 'expose-contradictions':
-      prompt += `━━━ YOUR TASK: EXPOSE CONTRADICTIONS ━━━
+      prompt += `Your opponent just made their case. Now it's your turn to respond.
 
-Your opponent has just presented their position. Your role is to CRITICALLY ANALYZE it.
+What's wrong with what they just said? Where do you disagree? What have they overlooked or assumed? What problems do you see in their reasoning? Be sharp and precise in your critique.
 
-YOUR MANDATE:
-1. Identify INTERNAL CONTRADICTIONS in their argument
-2. Reveal UNEXAMINED ASSUMPTIONS they're making
-3. Show where their reasoning BREAKS DOWN
-4. Point to IMPLICATIONS they haven't considered
-5. Expose the LIMITS of their framework
+Don't hold back - this is philosophical combat. But engage with their actual arguments, not straw men.
 
-IMPORTANT: You're not just disagreeing - you're showing where their own logic undermines itself, where they've smuggled in premises, where contradictions lurk. This is philosophical surgery: precise, revealing, devastating.
-
-Don't offer your own complete alternative yet - focus on exposing the problems in what they've said. The contradictions you reveal will set up the next move in the dialectic.
-
-Length: 2-3 substantial paragraphs
-Tone: Incisive, analytical, revealing hidden tensions`
+Length: 2-3 paragraphs`
       break
 
     case 'synthesis-response':
-      prompt += `━━━ YOUR TASK: SYNTHESIS & RESPONSE ━━━
+      prompt += `Your opponent just challenged your position. How do you respond?
 
-Your opponent has exposed contradictions in the previous position. You must now RESPOND to these contradictions through SYNTHESIS.
+Maybe they have a point - or maybe they're revealing something deeper. Can you address their critique while advancing your own understanding? Push the conversation forward by engaging seriously with what they said.
 
-YOUR MANDATE:
-1. ACKNOWLEDGE the contradictions your opponent identified
-2. Show how these contradictions point to DEEPER TRUTHS
-3. INTEGRATE the valid insights from both positions
-4. Propose a HIGHER-LEVEL understanding that resolves or transforms the contradiction
-5. Establish a NEW POSITION that builds upon what came before
+Think deeply and respond authentically to where the conversation has gone.
 
-This is Hegelian Aufhebung: you PRESERVE what was true in both thesis and critique, NEGATE what was limited or false, and ELEVATE to a higher level of understanding. Your synthesis becomes the new thesis for the next round.
-
-CRITICAL: Don't just defend yourself - transcend the opposition by showing how the contradiction itself reveals something important. Move the conversation forward and upward.
-
-Length: 3-4 substantial paragraphs
-Tone: Integrative yet advancing, philosophically sophisticated`
+Length: 3-4 paragraphs`
       break
 
     case 'new-thesis':
-      prompt += `━━━ YOUR TASK: PROPOSE NEW THESIS ━━━
+      prompt += `Building on what's been said, where do you think we should go from here?
 
-Building on your opponent's synthesis, you must now propose a NEW THESIS that advances the dialectic.
+Your opponent made some moves. What new questions or problems does this open up? How has the conversation evolved the original question? Take the discussion in a new direction.
 
-YOUR MANDATE:
-1. ACCEPT the synthesis as a genuine advance in understanding
-2. But identify NEW QUESTIONS or PROBLEMS that emerge at this higher level
-3. Propose a TRANSFORMED VERSION of the original thesis
-4. Show how the dialectical process has REFINED our understanding
-5. Establish NEW GROUND for the next phase of the dialectic
-
-You're not going back to your original position - you're proposing something NEW that incorporates what we've learned but pushes beyond it. The dialectic spirals upward, and you're opening the next turn of the spiral.
-
-Think: "Yes, AND..." or "Precisely because of this synthesis, we must now consider..."
-
-Length: 2-3 substantial paragraphs
-Tone: Advancing, building upon progress, opening new territory`
+Length: 2-3 paragraphs`
       break
 
     case 'final-position':
-      prompt += `━━━ YOUR TASK: ARTICULATE FINAL POSITION ━━━
+      prompt += `This is your final chance to speak. Looking back at this whole exchange, what's your considered position now?
 
-This is the final round. Bring the dialectical process to its culmination.
+The conversation has covered a lot of ground. Where has it taken you? What do you think after really wrestling with this question and your opponent's challenges?
 
-YOUR MANDATE:
-1. Survey the ENTIRE DIALECTICAL JOURNEY
-2. Articulate your FINAL POSITION after this process of negation and synthesis
-3. Show what we've LEARNED through the dialectical process
-4. Identify remaining TENSIONS or QUESTIONS
-5. Point toward what ULTIMATE SYNTHESIS might look like
+Be honest about what you've learned and where you stand.
 
-You're not "winning" the argument - you're showing how the dialectical process has transformed understanding. Acknowledge the power of what your opponent has contributed. Show how the original thesis has been sublated into something richer.
-
-Length: 3-4 substantial paragraphs
-Tone: Culminating, reflective, philosophically mature`
+Length: 3-4 paragraphs`
       break
-  }
-
-  if (roundNumber === totalRounds) {
-    prompt += `
-
-━━━ FINAL ROUND REMINDER ━━━
-This is the last exchange. Make your ultimate contribution to the dialectic. What has this process revealed? Where does it point?`
   }
 
   prompt += `
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-RESPOND NOW AS ${fighter.name.toUpperCase()}:
+YOUR RESPONSE:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
 
   // Stream response
@@ -313,19 +255,19 @@ function generateFallbackResponse(
 ): string {
   switch (move) {
     case 'initial-thesis':
-      return `As ${fighter.name}, I must establish my position on "${originalThesis}". My philosophical framework approaches this question through careful analysis of its underlying assumptions and implications. I believe we must examine this claim rigorously.`
+      return `The question of "${originalThesis}" is fascinating. From my perspective, we need to carefully examine what this claim really means and what it assumes. Let me lay out where I stand on this.`
     
     case 'expose-contradictions':
-      return `${opponentName}'s position, while compelling, contains certain tensions that bear examination. The framework they've established makes assumptions that may not withstand scrutiny. We must probe these foundational commitments more carefully.`
+      return `${opponentName}, I think there's a problem with your position. You're making some assumptions here that don't quite hold up. Let me push back on what you're saying.`
     
     case 'synthesis-response':
-      return `The contradictions ${opponentName} has identified are indeed significant. However, I believe these tensions point toward a deeper understanding. By integrating both perspectives, we can arrive at a more comprehensive view that preserves what is valuable in each position while transcending their limitations.`
+      return `You raise an important point, ${opponentName}. I don't think it undermines my position, but it does reveal something deeper at stake here. Let me address what you're getting at and explain why this actually moves us forward.`
     
     case 'new-thesis':
-      return `Building upon this synthesis, I propose we must now consider how this transformed understanding opens new questions. The dialectical process has refined our grasp of the original thesis, revealing dimensions we hadn't initially considered.`
+      return `Looking at where we've gone so far, I think we need to reconsider the question itself. The exchange has revealed new dimensions to this problem that weren't apparent at first. Here's what I think we should be asking now.`
     
     case 'final-position':
-      return `Through this dialectical exchange, we have traced a path from the original thesis through critique and synthesis. What emerges is a richer understanding that incorporates the insights each position has contributed to the dialogue.`
+      return `After this whole exchange, here's where I stand. We've covered a lot of ground, and I think both of us have sharpened our positions. The question is richer and more complex than it first appeared.`
   }
 }
 
