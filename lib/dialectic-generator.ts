@@ -479,43 +479,57 @@ ${conversationHistory.join('\n\n')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Now I need you to help me understand what just happened. I want 3 different ways of looking at this conversation - 3 insights that show how these two thinkers actually illuminate something deeper together than either could alone.
+ANALYSIS TASK: Generate 3 specific syntheses that reference actual arguments from this conversation.
 
-Each insight should:
-- Build on what they actually argued (not generic philosophy)
-- Show how their disagreement reveals a deeper truth
-- Give us something new to think about
+CRITICAL: You must quote or paraphrase specific things these thinkers actually said. Don't give me generic philosophy - I want insights that could ONLY come from analyzing THIS specific exchange.
 
-I want three different angles:
-- First: Show how they're both right about different pieces of the puzzle
-- Second: Find the bigger picture that makes their conflict make sense
-- Third: Explain why their disagreement itself teaches us something important
+For each synthesis:
+1. QUOTE or reference specific arguments made in the conversation above
+2. Point to particular moments where the thinkers engaged with each other
+3. Identify what concepts/ideas they actually discussed (not abstract categories)
+4. Show how their real positions create genuine intellectual tension
 
-Make it conversational and insightful, not academic jargon. Format as valid JSON:
+Three required synthesis types:
+
+TYPE 1 (resolution): How their specific arguments complement each other
+- What did ${fighter1.name} argue that was valuable?
+- What did ${fighter2.name} argue that was valuable?
+- How do these SPECIFIC positions work together?
+
+TYPE 2 (transcendence): What bigger framework emerges from their actual exchange
+- What deeper question did their conversation reveal?
+- How does their specific disagreement point to something larger?
+
+TYPE 3 (paradox): Why their particular disagreement is philosophically productive
+- What made their specific conflict necessary and valuable?
+- How did pushing against each other reveal something neither could see alone?
+
+Write like a thoughtful person explaining genuine insights, not academic abstractions. Reference the actual conversation extensively.
+
+Format as valid JSON:
 
 {
   "syntheses": [
     {
-      "title": "A compelling 8-12 word insight title",
+      "title": "A specific insight about what these thinkers revealed together",
       "type": "resolution",
-      "content": "Start by noting what each thinker brought to the table that was valuable. Quote or reference what they actually said.\n\nThen explain how these different perspectives actually complement each other. What do we see when we put them together?\n\nFinally, what does this integrated view help us understand that we couldn't see before?",
-      "concept_tags": ["relevant", "philosophical", "concepts", "from", "debate"]
+      "content": "When ${fighter1.name} argued [specific quote or paraphrase], they revealed [specific insight]. ${fighter2.name} responded by [specific quote or paraphrase], which showed [different specific insight].\n\nWhat's fascinating is how these positions actually work together: [explain the specific complementarity based on their actual arguments].\n\nThis synthesis gives us [specific new understanding that emerges from THEIR conversation, not general philosophy].",
+      "concept_tags": ["specific-concepts", "from-actual", "conversation", "not-generic", "tags"]
     }
   ]
 }
 
-CRITICAL JSON REQUIREMENTS:
-- Must return ONLY valid JSON - no markdown, no explanations, no code blocks
-- Use \\n for line breaks in content strings, not actual newlines
-- Escape any quotes inside strings with \\"
-- All strings must be properly quoted
-- Include exactly 3 syntheses with types: "resolution", "transcendence", "paradox"
-- Each synthesis 250-350 words
+CRITICAL REQUIREMENTS:
+- MUST quote or reference specific statements from the conversation above
+- MUST analyze their actual arguments, not generic philosophical positions
+- MUST return valid JSON only - no markdown, explanations, or code blocks
+- Use \\n for line breaks, escape quotes with \\"
+- Exactly 3 syntheses: "resolution", "transcendence", "paradox"
+- Each 250-350 words of specific analysis
 
-Example format:
-{"syntheses":[{"title":"Title here","type":"resolution","content":"Content with \\n for line breaks","concept_tags":["tag1","tag2"]}]}
+If you give me generic philosophy instead of analyzing THEIR actual conversation, that's a failure. I need insights that could only come from reading what these specific thinkers actually said to each other.
 
-Respond with ONLY the JSON object, nothing else:`
+Respond with ONLY the JSON object:`
 
   const model = getSynthesisModel()
   
