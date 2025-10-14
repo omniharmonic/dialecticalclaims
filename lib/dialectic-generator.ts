@@ -1,6 +1,68 @@
 import { getDialecticModel, getSynthesisModel } from './gemini-client'
 import { Fighter } from '@/types/database'
 
+// Helper functions for robust JSON parsing
+function fixCommonJsonErrors(jsonStr: string): string {
+  let fixed = jsonStr
+
+  // Fix unescaped quotes in strings
+  fixed = fixed.replace(/"([^"\\]*)"/g, (match, content) => {
+    // Only fix if content contains unescaped quotes
+    if (content.includes('"') && !content.includes('\\"')) {
+      const escapedContent = content.replace(/"/g, '\\"')
+      return `"${escapedContent}"`
+    }
+    return match
+  })
+
+  // Fix missing commas between array elements and object properties
+  fixed = fixed.replace(/}\s*{/g, '}, {')
+  fixed = fixed.replace(/]\s*\[/g, '], [')
+  fixed = fixed.replace(/"\s*"/g, '", "')
+
+  // Fix trailing commas
+  fixed = fixed.replace(/,(\s*[}\]])/g, '$1')
+
+  return fixed
+}
+
+function repairJsonStructure(jsonStr: string): string {
+  let repaired = jsonStr
+
+  // Ensure the structure is complete
+  if (!repaired.includes('"syntheses"')) {
+    // If no syntheses array found, wrap content in proper structure
+    repaired = `{"syntheses": [${repaired}]}`
+  }
+
+  // Try to repair incomplete JSON by adding missing closing braces/brackets
+  let openBraces = (repaired.match(/{/g) || []).length
+  let closeBraces = (repaired.match(/}/g) || []).length
+  let openBrackets = (repaired.match(/\[/g) || []).length
+  let closeBrackets = (repaired.match(/]/g) || []).length
+
+  // Add missing closing braces
+  while (closeBraces < openBraces) {
+    repaired += '}'
+    closeBraces++
+  }
+
+  // Add missing closing brackets
+  while (closeBrackets < openBrackets) {
+    repaired += ']'
+    closeBrackets++
+  }
+
+  // Fix content strings that may contain problematic characters
+  repaired = repaired.replace(/"content":\s*"([^"]*(?:"[^"]*)*)"/, (match, content) => {
+    // Replace newlines with \n and fix any unescaped quotes
+    const fixed = content.replace(/\n/g, '\\n').replace(/(?<!\\)"/g, '\\"')
+    return `"content": "${fixed}"`
+  })
+
+  return repaired
+}
+
 interface GenerateDialecticOptions {
   fighter1: Fighter
   fighter2: Fighter
@@ -314,13 +376,18 @@ Make it conversational and insightful, not academic jargon. Format as valid JSON
   ]
 }
 
-Keep it natural and insightful:
-- Reference what they ACTUALLY said in this conversation
-- 3 syntheses: one "resolution", one "transcendence", one "paradox"
-- Each should be 250-350 words that sound like a thoughtful person explaining an insight
-- Valid JSON only, no extra formatting
+CRITICAL JSON REQUIREMENTS:
+- Must return ONLY valid JSON - no markdown, no explanations, no code blocks
+- Use \\n for line breaks in content strings, not actual newlines
+- Escape any quotes inside strings with \\"
+- All strings must be properly quoted
+- Include exactly 3 syntheses with types: "resolution", "transcendence", "paradox"
+- Each synthesis 250-350 words
 
-Respond with ONLY the JSON object:`
+Example format:
+{"syntheses":[{"title":"Title here","type":"resolution","content":"Content with \\n for line breaks","concept_tags":["tag1","tag2"]}]}
+
+Respond with ONLY the JSON object, nothing else:`
 
   const model = getSynthesisModel()
   
@@ -328,33 +395,52 @@ Respond with ONLY the JSON object:`
     const result = await model.generateContent(prompt)
     const response = result.response.text()
 
-    // Aggressively clean the response to extract JSON
+    // Aggressively clean and repair the JSON response
     let cleaned = response.trim()
-    
-    // Remove markdown code blocks
+
+    // Remove markdown code blocks and any explanatory text
     cleaned = cleaned.replace(/```json\s*/gi, '')
     cleaned = cleaned.replace(/```\s*/g, '')
-    
-    // Find the JSON object boundaries
+    cleaned = cleaned.replace(/^[^{]*/, '') // Remove any text before first {
+    cleaned = cleaned.replace(/[^}]*$/, '}') // Ensure it ends with }
+
+    // Find the JSON object boundaries more carefully
     const firstBrace = cleaned.indexOf('{')
     const lastBrace = cleaned.lastIndexOf('}')
-    
+
     if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
       cleaned = cleaned.substring(firstBrace, lastBrace + 1)
     }
-    
-    // Parse the JSON
-    const parsed = JSON.parse(cleaned)
+
+    // Fix common JSON syntax errors
+    cleaned = fixCommonJsonErrors(cleaned)
+
+    // Try to parse the JSON
+    let parsed: any
+    try {
+      parsed = JSON.parse(cleaned)
+    } catch (parseError) {
+      console.warn('Initial parse failed, attempting repair:', parseError)
+      // Try more aggressive repairs
+      cleaned = repairJsonStructure(cleaned)
+      parsed = JSON.parse(cleaned)
+    }
+
     const syntheses = parsed.syntheses || []
-    
-    // Validate we got actual syntheses
-    if (syntheses.length > 0 && syntheses[0].title !== 'Compelling 8-12 word title') {
+
+    // Validate we got actual syntheses with meaningful content
+    if (syntheses.length > 0 &&
+        syntheses[0].title &&
+        syntheses[0].title !== 'Compelling 8-12 word title' &&
+        syntheses[0].title !== 'A compelling 8-12 word insight title' &&
+        syntheses[0].content &&
+        syntheses[0].content.length > 100) {
       return syntheses
     }
-    
+
     // If we got template/placeholder response, fall through to fallback
     throw new Error('Template response received')
-    
+
   } catch (error) {
     console.error('Synthesis generation failed:', error)
     

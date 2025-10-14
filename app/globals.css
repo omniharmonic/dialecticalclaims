@@ -108,6 +108,7 @@
     font-family: 'Orbitron', sans-serif;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    font-weight: 700;
   }
 
   .philosophical-text {
@@ -309,7 +310,8 @@
   /* VS badge for fighter comparison */
   .vs-badge {
     @apply text-xl sm:text-2xl md:text-4xl font-bold;
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
     color: #ff0080;
     text-shadow:
       0 0 10px rgba(255, 0, 128, 1),
@@ -321,10 +323,11 @@
 
   /* Arcade title styling */
   .arcade-title {
-    font-family: 'Press Start 2P', cursive;
-    text-shadow: 
-      3px 3px 0 rgba(255, 0, 255, 0.5),
-      -3px -3px 0 rgba(0, 255, 255, 0.5),
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    text-shadow:
+      2px 2px 0 rgba(255, 0, 255, 0.5),
+      -2px -2px 0 rgba(0, 255, 255, 0.5),
       0 0 20px rgba(255, 255, 255, 0.5);
     animation: glitch 5s infinite;
   }
