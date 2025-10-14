@@ -8,6 +8,7 @@ const FIGHTER_IMAGE_MAP: Record<string, string> = {
   'Socrates': 'Socrates.png',
   'Plato': 'Plato.png',
   'Aristotle': 'Aristotle.png',
+  'René Descartes': 'René Descartes.png',
   'Friedrich Nietzsche': 'Nietzsche.png',
   'Georg Wilhelm Friedrich Hegel': 'Hegel.png',
   'Karl Marx': 'Marx.png',
