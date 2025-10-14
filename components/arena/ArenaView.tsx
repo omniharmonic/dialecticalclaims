@@ -4,6 +4,8 @@ import { useEffect, useState, useRef } from 'react'
 import { Dialectic, Fighter, Synthesis } from '@/types/database'
 import { Card, CardContent } from '@/components/ui/Card'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { getFighterImageUrl } from '@/lib/fighter-images'
 
 interface ArenaViewProps {
   dialectic: Dialectic & {
@@ -148,11 +150,29 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
           <div className="flex-1 max-w-md">
             <div className="bg-gradient-to-r from-blue-500/20 to-transparent border-2 border-blue-500/50 rounded-lg p-4 relative overflow-hidden">
               <div className="absolute inset-0 bg-blue-500/10 animate-pulse" />
-              <div className="relative z-10">
-                <h2 className="text-xl md:text-2xl font-bold text-blue-400 mb-1" style={{fontFamily: 'Orbitron, sans-serif'}}>
-                  {dialectic.fighter1.name.toUpperCase()}
-                </h2>
-                <p className="text-xs text-blue-300/70">{dialectic.fighter1.fighter_name}</p>
+              <div className="relative z-10 flex items-center gap-4">
+                {/* Fighter 1 Image */}
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-blue-400 flex-shrink-0 bg-muted">
+                  {getFighterImageUrl(dialectic.fighter1.name) ? (
+                    <Image
+                      src={getFighterImageUrl(dialectic.fighter1.name)!}
+                      alt={dialectic.fighter1.name}
+                      width={80}
+                      height={80}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-muted-foreground">
+                      {dialectic.fighter1.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-xl md:text-2xl font-bold text-blue-400 mb-1" style={{fontFamily: 'Orbitron, sans-serif'}}>
+                    {dialectic.fighter1.name.toUpperCase()}
+                  </h2>
+                  <p className="text-xs text-blue-300/70">{dialectic.fighter1.fighter_name}</p>
+                </div>
               </div>
               <div className="absolute -right-4 -bottom-4 text-6xl opacity-10">🥊</div>
             </div>
@@ -169,11 +189,29 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
           <div className="flex-1 max-w-md">
             <div className="bg-gradient-to-l from-red-500/20 to-transparent border-2 border-red-500/50 rounded-lg p-4 relative overflow-hidden">
               <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
-              <div className="relative z-10 text-right">
-                <h2 className="text-xl md:text-2xl font-bold text-red-400 mb-1" style={{fontFamily: 'Orbitron, sans-serif'}}>
-                  {dialectic.fighter2.name.toUpperCase()}
-                </h2>
-                <p className="text-xs text-red-300/70">{dialectic.fighter2.fighter_name}</p>
+              <div className="relative z-10 flex items-center gap-4 justify-end">
+                <div className="text-right">
+                  <h2 className="text-xl md:text-2xl font-bold text-red-400 mb-1" style={{fontFamily: 'Orbitron, sans-serif'}}>
+                    {dialectic.fighter2.name.toUpperCase()}
+                  </h2>
+                  <p className="text-xs text-red-300/70">{dialectic.fighter2.fighter_name}</p>
+                </div>
+                {/* Fighter 2 Image */}
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-red-400 flex-shrink-0 bg-muted">
+                  {getFighterImageUrl(dialectic.fighter2.name) ? (
+                    <Image
+                      src={getFighterImageUrl(dialectic.fighter2.name)!}
+                      alt={dialectic.fighter2.name}
+                      width={80}
+                      height={80}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-muted-foreground">
+                      {dialectic.fighter2.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="absolute -left-4 -bottom-4 text-6xl opacity-10">🥊</div>
             </div>
