@@ -3,6 +3,7 @@
 import { Fighter } from '@/types/database'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { getFighterImageUrl } from '@/lib/fighter-images'
 
 interface FighterCardProps {
   fighter: Fighter
@@ -12,6 +13,8 @@ interface FighterCardProps {
 }
 
 export function FighterCard({ fighter, selected, disabled, onClick }: FighterCardProps) {
+  const imageUrl = getFighterImageUrl(fighter.name)
+  
   return (
     <div
       onClick={disabled ? undefined : onClick}
@@ -21,11 +24,11 @@ export function FighterCard({ fighter, selected, disabled, onClick }: FighterCar
         disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
-      {/* Fighter Portrait - placeholder for now */}
-      <div className="w-full aspect-[3/4] bg-muted rounded-md mb-3 overflow-hidden relative">
-        {fighter.portrait_url ? (
+      {/* Fighter Portrait */}
+      <div className="w-full aspect-square bg-muted rounded-md mb-3 overflow-hidden relative">
+        {imageUrl ? (
           <Image 
-            src={fighter.portrait_url}
+            src={imageUrl}
             alt={fighter.name}
             fill
             className="object-cover"
