@@ -145,14 +145,14 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
       {/* Header - Street Fighter Style HUD */}
       <div className="space-y-6 mb-8">
         {/* Fighter Name Plates */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
           {/* Fighter 1 */}
-          <div className="flex-1 max-w-md">
+          <div className="w-full lg:flex-1 lg:max-w-md">
             <div className="bg-gradient-to-r from-blue-500/20 to-transparent border-2 border-blue-500/50 rounded-lg p-4 relative overflow-hidden">
               <div className="absolute inset-0 bg-blue-500/10 animate-pulse" />
               <div className="relative z-10 flex items-center gap-4">
                 {/* Fighter 1 Image */}
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-blue-400 flex-shrink-0 bg-muted">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-blue-400 flex-shrink-0 bg-muted">
                   {getFighterImageUrl(dialectic.fighter1.name) ? (
                     <Image
                       src={getFighterImageUrl(dialectic.fighter1.name)!}
@@ -168,10 +168,10 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
                   )}
                 </div>
                 <div>
-                  <h2 className="text-xl md:text-2xl font-bold text-blue-400 mb-1" style={{fontFamily: 'Orbitron, sans-serif'}}>
+                  <h2 className="text-sm sm:text-lg md:text-xl lg:text-2xl font-bold text-blue-400 mb-1" style={{fontFamily: 'Orbitron, sans-serif'}}>
                     {dialectic.fighter1.name.toUpperCase()}
                   </h2>
-                  <p className="text-xs text-blue-300/70">{dialectic.fighter1.fighter_name}</p>
+                  <p className="text-xs text-blue-300/70 hidden sm:block">{dialectic.fighter1.fighter_name}</p>
                 </div>
               </div>
               <div className="absolute -right-4 -bottom-4 text-6xl opacity-10">🥊</div>
@@ -179,25 +179,25 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
           </div>
 
           {/* VS Badge */}
-          <div className="flex-shrink-0">
-            <div className="vs-badge px-4 py-2 bg-card border-4 border-primary rounded-lg">
+          <div className="flex-shrink-0 order-first lg:order-none mb-4 lg:mb-0">
+            <div className="vs-badge px-4 py-2 bg-card border-4 border-primary rounded-lg text-xl lg:text-4xl">
               VS
             </div>
           </div>
 
           {/* Fighter 2 */}
-          <div className="flex-1 max-w-md">
+          <div className="w-full lg:flex-1 lg:max-w-md">
             <div className="bg-gradient-to-l from-red-500/20 to-transparent border-2 border-red-500/50 rounded-lg p-4 relative overflow-hidden">
               <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
               <div className="relative z-10 flex items-center gap-4 justify-end">
                 <div className="text-right">
-                  <h2 className="text-xl md:text-2xl font-bold text-red-400 mb-1" style={{fontFamily: 'Orbitron, sans-serif'}}>
+                  <h2 className="text-sm sm:text-lg md:text-xl lg:text-2xl font-bold text-red-400 mb-1" style={{fontFamily: 'Orbitron, sans-serif'}}>
                     {dialectic.fighter2.name.toUpperCase()}
                   </h2>
-                  <p className="text-xs text-red-300/70">{dialectic.fighter2.fighter_name}</p>
+                  <p className="text-xs text-red-300/70 hidden sm:block">{dialectic.fighter2.fighter_name}</p>
                 </div>
                 {/* Fighter 2 Image */}
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-red-400 flex-shrink-0 bg-muted">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-red-400 flex-shrink-0 bg-muted">
                   {getFighterImageUrl(dialectic.fighter2.name) ? (
                     <Image
                       src={getFighterImageUrl(dialectic.fighter2.name)!}
@@ -221,12 +221,12 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
         {/* Thesis Display */}
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20 blur-xl" />
-          <Card className="relative p-6 bg-card/90 border-2 border-primary/30">
+          <Card className="relative p-4 sm:p-6 bg-card/90 border-2 border-primary/30">
             <div className="text-center">
               <div className="text-xs text-primary/60 mb-2" style={{fontFamily: '"Press Start 2P", cursive', letterSpacing: '0.1em'}}>
                 💭 THESIS 💭
               </div>
-              <p className="text-base md:text-lg italic philosophical-text text-foreground/90">
+              <p className="text-sm sm:text-base md:text-lg italic philosophical-text text-foreground/90">
                 &ldquo;{dialectic.thesis}&rdquo;
               </p>
             </div>
@@ -235,9 +235,9 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
 
         {/* Round Indicator - Street Fighter Style */}
         <div className="round-indicator">
-          <div className="inline-block px-6 py-3 border-4 border-primary bg-card rounded-lg relative overflow-hidden">
+          <div className="inline-block px-4 sm:px-6 py-2 sm:py-3 border-2 sm:border-4 border-primary bg-card rounded-lg relative overflow-hidden">
             <div className="absolute inset-0 bg-primary/10 animate-pulse" />
-            <span className="relative z-10">
+            <span className="relative z-10 text-xs sm:text-sm">
               ROUND {currentRound} / {dialectic.round_count}
             </span>
           </div>
@@ -374,18 +374,18 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
               <div key={index} className="relative group">
                 <div className={`absolute inset-0 blur-2xl opacity-0 group-hover:opacity-30 transition-opacity synthesis-glow-${synthesis.type}`} />
                 <Card
-                  className={`relative p-6 md:p-8 synthesis-card synthesis-${synthesis.type} transform transition-all duration-300 hover:scale-[1.02]`}
+                  className={`relative p-4 sm:p-6 md:p-8 synthesis-card synthesis-${synthesis.type} transform transition-all duration-300 hover:scale-[1.02]`}
                 >
-                  <div className="flex flex-col md:flex-row items-start justify-between gap-4 mb-6">
+                  <div className="flex flex-col items-start justify-between gap-4 mb-4 sm:mb-6">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="text-2xl">
+                      <div className="flex items-center gap-2 sm:gap-3 mb-3">
+                        <span className="text-xl sm:text-2xl">
                           {synthesis.type === 'resolution' && '✅'}
                           {synthesis.type === 'transcendence' && '🚀'}
                           {synthesis.type === 'paradox' && '🌀'}
                           {synthesis.type === 'subsumption' && '🔄'}
                         </span>
-                        <h3 className="text-xl md:text-2xl font-bold" style={{fontFamily: 'Orbitron, sans-serif'}}>
+                        <h3 className="text-lg sm:text-xl md:text-2xl font-bold" style={{fontFamily: 'Orbitron, sans-serif'}}>
                           {synthesis.title}
                         </h3>
                       </div>
@@ -414,7 +414,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
                     </div>
                   </div>
                   
-                  <div className="philosophical-text mb-6 whitespace-pre-wrap text-foreground/90 leading-relaxed border-l-4 border-primary/30 pl-4">
+                  <div className="philosophical-text mb-4 sm:mb-6 whitespace-pre-wrap text-foreground/90 leading-relaxed border-l-2 sm:border-l-4 border-primary/30 pl-3 sm:pl-4 text-sm sm:text-base">
                     {synthesis.content}
                   </div>
                   

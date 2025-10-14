@@ -308,10 +308,10 @@
 
   /* VS badge for fighter comparison */
   .vs-badge {
-    @apply text-4xl font-bold;
+    @apply text-xl sm:text-2xl md:text-4xl font-bold;
     font-family: 'Press Start 2P', cursive;
     color: #ff0080;
-    text-shadow: 
+    text-shadow:
       0 0 10px rgba(255, 0, 128, 1),
       0 0 20px rgba(255, 0, 128, 0.8),
       0 0 30px rgba(255, 0, 128, 0.6),
@@ -331,15 +331,21 @@
 
   /* Round indicator */
   .round-indicator {
-    @apply text-center py-4 my-6;
+    @apply text-center py-3 sm:py-4 my-4 sm:my-6;
     font-family: 'Press Start 2P', cursive;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: #00ffff;
-    text-shadow: 
+    text-shadow:
       0 0 10px rgba(0, 255, 255, 1),
       0 0 20px rgba(0, 255, 255, 0.5);
     letter-spacing: 0.1em;
     animation: pulse-neon 2s infinite;
+  }
+
+  @media (min-width: 640px) {
+    .round-indicator {
+      font-size: 0.875rem;
+    }
   }
 }
 

@@ -169,47 +169,49 @@ ${recentHistory.map((exchange, i) => {
   // Generate move-specific instructions that guide without being heavy-handed
   switch (dialecticalMove) {
     case 'initial-thesis':
-      prompt += `This is the opening of the exchange. Stake your claim on this thesis clearly and passionately. What do you think about it? Why? Draw on your philosophical commitments and make your position compelling.
+      prompt += `Here's what I want you to do: Really engage with this claim. What's your gut reaction? Where does it take your thinking? This isn't about giving a textbook answer - I want to see what happens when your philosophical mind encounters this idea.
 
-Respond as yourself - not as a narrator of the dialectic, but as a thinker engaging with this provocative claim.
+Talk to me like we're having a real conversation about something that matters. What strikes you about this thesis? What bothers you or excites you about it?
 
 Length: 2-3 paragraphs`
       break
 
     case 'expose-contradictions':
-      prompt += `Your opponent just made their case. Now it's your turn to respond.
+      prompt += `Your opponent just laid out their position. Now I want your honest reaction.
 
-What's wrong with what they just said? Where do you disagree? What have they overlooked or assumed? What problems do you see in their reasoning? Be sharp and precise in your critique.
+What jumped out at you? Where do you think they're wrong, or where are they missing something important? Don't just disagree for the sake of it - show me what they're not seeing, or where their logic breaks down.
 
-Don't hold back - this is philosophical combat. But engage with their actual arguments, not straw men.
+Be direct. This is about getting to the truth, not being polite. What would you say to them if you were really trying to change their mind?
 
 Length: 2-3 paragraphs`
       break
 
     case 'synthesis-response':
-      prompt += `Your opponent just challenged your position. How do you respond?
+      prompt += `They just hit you with some serious criticism. How are you feeling about that?
 
-Maybe they have a point - or maybe they're revealing something deeper. Can you address their critique while advancing your own understanding? Push the conversation forward by engaging seriously with what they said.
+Maybe they caught something you missed. Maybe they're completely off base. Either way, I want to see you wrestle with what they said. Can you take their best shot and come back stronger? Or do you need to adjust your thinking?
 
-Think deeply and respond authentically to where the conversation has gone.
+This is where the real philosophy happens - when someone challenges you and you have to figure out what you actually believe. Show me that process.
 
 Length: 3-4 paragraphs`
       break
 
     case 'new-thesis':
-      prompt += `Building on what's been said, where do you think we should go from here?
+      prompt += `OK, after hearing all this back and forth, what's really going on here?
 
-Your opponent made some moves. What new questions or problems does this open up? How has the conversation evolved the original question? Take the discussion in a new direction.
+I think this conversation has opened up something bigger than where we started. What's the real question we should be asking? What have we stumbled onto that's more interesting or important than the original thesis?
+
+Take us somewhere new. What direction should this conversation go now?
 
 Length: 2-3 paragraphs`
       break
 
     case 'final-position':
-      prompt += `This is your final chance to speak. Looking back at this whole exchange, what's your considered position now?
+      prompt += `This is it - last word. After everything we've talked about, where do you land?
 
-The conversation has covered a lot of ground. Where has it taken you? What do you think after really wrestling with this question and your opponent's challenges?
+I want your honest assessment. Has this conversation changed how you think about any of this? Are you more convinced of your original position, or has something shifted? What do you see now that you didn't see before?
 
-Be honest about what you've learned and where you stand.
+Don't give me a diplomatic summary. Tell me what you really think after having your ideas tested.
 
 Length: 3-4 paragraphs`
       break
@@ -255,19 +257,19 @@ function generateFallbackResponse(
 ): string {
   switch (move) {
     case 'initial-thesis':
-      return `The question of "${originalThesis}" is fascinating. From my perspective, we need to carefully examine what this claim really means and what it assumes. Let me lay out where I stand on this.`
+      return `You know, "${originalThesis}" - that's the kind of claim that makes me want to dig deeper. There's something here that deserves serious attention. Let me tell you what I think about this.`
     
     case 'expose-contradictions':
-      return `${opponentName}, I think there's a problem with your position. You're making some assumptions here that don't quite hold up. Let me push back on what you're saying.`
+      return `Hold on, ${opponentName} - I'm not buying this. There's something off about what you're arguing here. You're taking some things for granted that I think we need to question.`
     
     case 'synthesis-response':
-      return `You raise an important point, ${opponentName}. I don't think it undermines my position, but it does reveal something deeper at stake here. Let me address what you're getting at and explain why this actually moves us forward.`
+      return `${opponentName}, you've got me thinking. I'm not ready to concede the point, but you've highlighted something I need to address. This is actually getting at something deeper than I first realized.`
     
     case 'new-thesis':
-      return `Looking at where we've gone so far, I think we need to reconsider the question itself. The exchange has revealed new dimensions to this problem that weren't apparent at first. Here's what I think we should be asking now.`
+      return `You know what? I think we've stumbled onto something bigger here. The more we talk, the more I realize we're not just debating the original point anymore. There's a different question emerging that might be more important.`
     
     case 'final-position':
-      return `After this whole exchange, here's where I stand. We've covered a lot of ground, and I think both of us have sharpened our positions. The question is richer and more complex than it first appeared.`
+      return `After all this back and forth, I'll tell you where I've landed. This conversation has pushed me in ways I wasn't expecting. The whole thing turned out to be more complicated than either of us probably thought at the start.`
   }
 }
 
@@ -281,45 +283,42 @@ interface GenerateSynthesesOptions {
 async function generateSyntheses(options: GenerateSynthesesOptions): Promise<any[]> {
   const { thesis, fighter1, fighter2, conversationHistory } = options
 
-  const prompt = `You are analyzing a philosophical debate between ${fighter1.name} and ${fighter2.name} on: "${thesis}"
-
-Here is the complete exchange:
+  const prompt = `I just watched a fascinating debate between ${fighter1.name} and ${fighter2.name} about "${thesis}". Here's what they said:
 
 ${conversationHistory.join('\n\n')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Your task: Generate 3 distinct philosophical syntheses that capture what emerged from this specific exchange. Each synthesis should:
+Now I need you to help me understand what just happened. I want 3 different ways of looking at this conversation - 3 insights that show how these two thinkers actually illuminate something deeper together than either could alone.
 
-1. Directly reference actual arguments made in THIS conversation
-2. Show how the two thinkers' positions relate to each other
-3. Articulate an integrative insight that transcends the initial opposition
-4. Be intellectually substantive (not generic platitudes)
+Each insight should:
+- Build on what they actually argued (not generic philosophy)
+- Show how their disagreement reveals a deeper truth
+- Give us something new to think about
 
-Generate 3 syntheses using different approaches:
-- TYPE 1 (resolution): Show how both positions reveal complementary truths
-- TYPE 2 (transcendence): Identify a higher-level framework that reframes the debate  
-- TYPE 3 (paradox): Explain why the tension itself is philosophically productive
+I want three different angles:
+- First: Show how they're both right about different pieces of the puzzle
+- Second: Find the bigger picture that makes their conflict make sense
+- Third: Explain why their disagreement itself teaches us something important
 
-Format as valid JSON:
+Make it conversational and insightful, not academic jargon. Format as valid JSON:
 
 {
   "syntheses": [
     {
-      "title": "Compelling 8-12 word title",
+      "title": "A compelling 8-12 word insight title",
       "type": "resolution",
-      "content": "First paragraph: What key tensions emerged in the debate? Quote or reference specific arguments.\n\nSecond paragraph: How do these positions integrate? What deeper truth emerges?\n\nThird paragraph: What are the implications of this synthesis?",
-      "concept_tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
+      "content": "Start by noting what each thinker brought to the table that was valuable. Quote or reference what they actually said.\n\nThen explain how these different perspectives actually complement each other. What do we see when we put them together?\n\nFinally, what does this integrated view help us understand that we couldn't see before?",
+      "concept_tags": ["relevant", "philosophical", "concepts", "from", "debate"]
     }
   ]
 }
 
-REQUIREMENTS:
-- Reference SPECIFIC arguments from the actual exchange above
-- 3 syntheses total, each 250-350 words
-- Must be valid JSON with no markdown formatting
-- Use \\n for paragraph breaks in content field
-- Each synthesis type must be different: resolution, transcendence, paradox
+Keep it natural and insightful:
+- Reference what they ACTUALLY said in this conversation
+- 3 syntheses: one "resolution", one "transcendence", one "paradox"
+- Each should be 250-350 words that sound like a thoughtful person explaining an insight
+- Valid JSON only, no extra formatting
 
 Respond with ONLY the JSON object:`
 
@@ -367,10 +366,10 @@ Respond with ONLY the JSON object:`
     
     return [
       {
-        title: `Integrating ${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()}`,
+        title: `What ${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()} both got right`,
         type: 'resolution',
-        content: `In this exchange on "${thesis}", ${fighter1.name} and ${fighter2.name} developed complementary perspectives that illuminate different dimensions of the question. Where ${fighter1.name} emphasized analytical rigor and structural understanding, ${fighter2.name} brought moral urgency and practical methodology to the conversation.\n\nThe dialectic revealed that neither pure analysis nor pure moral vision alone suffices for transformation. Understanding systemic forces must be coupled with ethical commitment and strategic action. The debate transcended its starting point by showing how intellectual clarity and moral purpose must work in concert.\n\nWhat emerges is a richer framework that preserves the insights of both thinkers while moving beyond their initial positions. The synthesis points toward an approach that is simultaneously analytically sophisticated and morally grounded, capable of both diagnosing injustice and charting paths toward genuine transformation.`,
-        concept_tags: [keyThemes, 'integration', 'praxis', 'transformation', 'dialectical-synthesis'],
+        content: `Watching ${fighter1.name} and ${fighter2.name} go at each other over "${thesis}" was fascinating because they were both onto something important, just coming at it from different angles. ${fighter1.name} brought that sharp analytical edge, really digging into how systems work and what forces are actually at play. ${fighter2.name} came with moral clarity and urgency about what needs to change and why we can't just sit around theorizing.\n\nHere's what I think happened: they were both right, but about different pieces of the puzzle. You can't transform anything if you don't understand how it actually works - that's where ${fighter1.name}'s analytical rigor becomes essential. But understanding alone isn't enough if you don't have the moral conviction and practical vision to actually do something about it - which is what ${fighter2.name} brought to the table.\n\nWhat emerges when you put them together is something more powerful than either approach alone. You get both the analytical sophistication to understand complex problems and the moral grounding to know why solving them matters. It's the difference between being smart about the world and being smart about changing it. That integration - clear thinking plus moral purpose - that's where real transformation becomes possible.`,
+        concept_tags: [keyThemes, 'integration', 'analysis-and-action', 'transformation', 'complementary-truths'],
       },
     ]
   }
