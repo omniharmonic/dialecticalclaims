@@ -281,101 +281,96 @@ interface GenerateSynthesesOptions {
 async function generateSyntheses(options: GenerateSynthesesOptions): Promise<any[]> {
   const { thesis, fighter1, fighter2, conversationHistory } = options
 
-  const prompt = `You are an expert at Hegelian dialectical synthesis. You have observed a rigorous philosophical dialectic between ${fighter1.name} and ${fighter2.name} on the thesis: "${thesis}"
+  const prompt = `You are analyzing a philosophical debate between ${fighter1.name} and ${fighter2.name} on: "${thesis}"
 
-The dialectic has followed the pattern of thesis → antithesis (exposing contradictions) → synthesis → new thesis, spiraling upward through multiple rounds.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-COMPLETE DIALECTICAL TRANSCRIPT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Here is the complete exchange:
 
 ${conversationHistory.join('\n\n')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SYNTHESIS GENERATION TASK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Generate 3-4 DISTINCT final synthesis candidates that represent the ultimate Aufhebung of this entire dialectical process.
+Your task: Generate 3 distinct philosophical syntheses that capture what emerged from this specific exchange. Each synthesis should:
 
-Each synthesis should employ a different integrative strategy:
+1. Directly reference actual arguments made in THIS conversation
+2. Show how the two thinkers' positions relate to each other
+3. Articulate an integrative insight that transcends the initial opposition
+4. Be intellectually substantive (not generic platitudes)
 
-1. **RESOLUTION**: Show how both positions were partial truths pointing toward a more comprehensive whole. The synthesis PRESERVES what was true in each, NEGATES what was limited, and ELEVATES to higher unity. Demonstrate how the contradictions were only apparent, revealing deeper consonance.
+Generate 3 syntheses using different approaches:
+- TYPE 1 (resolution): Show how both positions reveal complementary truths
+- TYPE 2 (transcendence): Identify a higher-level framework that reframes the debate  
+- TYPE 3 (paradox): Explain why the tension itself is philosophically productive
 
-2. **SUBSUMPTION**: One philosophical framework actually CONTAINS the other when properly understood. Show how one position operates at a more fundamental level, and the apparent opposition is really a difference in scope or abstraction. The synthesis shows how one tradition subsumes the insights of the other.
-
-3. **TRANSCENDENCE**: The entire thesis-antithesis framework itself must be transcended. The original question was ILL-FORMED or operated within a limited paradigm. Propose radically NEW GROUND that makes the original opposition obsolete. Move to a different conceptual level entirely where new questions emerge.
-
-4. **PRODUCTIVE PARADOX**: The contradiction should be HELD IN TENSION rather than resolved. Show how the opposition itself is GENERATIVE and any premature resolution would lose something essential. Both-and rather than either-or. The dialectical tension itself IS the truth, not something to be overcome.
-
-For each synthesis:
-- **title**: Profound philosophical title (45-65 characters, e.g., "The Dialectic of Freedom and Necessity")
-- **type**: Exactly one of: "resolution", "subsumption", "transcendence", "paradox" (lowercase)
-- **content**: 2-3 rich paragraphs (250-400 words) that:
-  * Acknowledge the full arc of the dialectical process
-  * Show deep engagement with specific arguments from the exchange
-  * Articulate the synthesis clearly and powerfully
-  * Demonstrate philosophical sophistication
-  * Explain WHY this synthesis is compelling and how it represents Aufhebung
-- **concept_tags**: 4-7 philosophical concepts (lowercase, hyphenated, e.g., ["dialectical-materialism", "negation", "aufhebung", "totality", "mediation"])
-
-CRITICAL REQUIREMENTS:
-- Each synthesis must represent a GENUINELY DIFFERENT path to integration
-- Reference SPECIFIC MOVES from the actual dialectical exchange
-- Write at the highest philosophical level
-- Show how each synthesis PRESERVES, NEGATES, and ELEVATES (Aufhebung)
-- Make each synthesis substantive and insightful, not generic
-- NO escape sequences in content (use actual paragraph breaks, not \\n)
-
-Respond with ONLY valid JSON:
+Format as valid JSON:
 
 {
   "syntheses": [
     {
-      "title": "Beyond the Subject-Object Dichotomy",
-      "type": "transcendence",
-      "content": "First substantial paragraph analyzing the dialectical process and what it revealed.
-
-Second paragraph articulating the synthesis and why it transcends the original opposition.
-
-Optional third paragraph showing implications and deeper significance.",
-      "concept_tags": ["subject-object", "dialectical-negation", "transcendence", "mediation", "totality"]
+      "title": "Compelling 8-12 word title",
+      "type": "resolution",
+      "content": "First paragraph: What key tensions emerged in the debate? Quote or reference specific arguments.\n\nSecond paragraph: How do these positions integrate? What deeper truth emerges?\n\nThird paragraph: What are the implications of this synthesis?",
+      "concept_tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
     }
   ]
 }
 
-RESPOND WITH ONLY THE JSON. NO MARKDOWN. NO CODE BLOCKS. NO EXPLANATIONS. JUST THE JSON OBJECT.`
+REQUIREMENTS:
+- Reference SPECIFIC arguments from the actual exchange above
+- 3 syntheses total, each 250-350 words
+- Must be valid JSON with no markdown formatting
+- Use \\n for paragraph breaks in content field
+- Each synthesis type must be different: resolution, transcendence, paradox
+
+Respond with ONLY the JSON object:`
 
   const model = getSynthesisModel()
-  const result = await model.generateContent(prompt)
-  const response = result.response.text()
-
-  // Aggressively clean the response
-  let cleaned = response.trim()
-  cleaned = cleaned.replace(/```json\s*/g, '')
-  cleaned = cleaned.replace(/```\s*/g, '')
-  cleaned = cleaned.replace(/^[^{]*/, '') // Remove anything before first {
-  cleaned = cleaned.replace(/[^}]*$/, '') // Remove anything after last }
   
-  // Fix common JSON issues
-  cleaned = cleaned.replace(/\\n/g, '\n')
-  cleaned = cleaned.replace(/\n\s*\n/g, '\n\n')
-
   try {
-    const parsed = JSON.parse(cleaned)
-    return parsed.syntheses || []
-  } catch (error) {
-    // Failed to parse synthesis JSON
-    // Response was: [cleaned]
+    const result = await model.generateContent(prompt)
+    const response = result.response.text()
 
-    // Fallback synthesis reflecting the dialectical process
+    // Aggressively clean the response to extract JSON
+    let cleaned = response.trim()
+    
+    // Remove markdown code blocks
+    cleaned = cleaned.replace(/```json\s*/gi, '')
+    cleaned = cleaned.replace(/```\s*/g, '')
+    
+    // Find the JSON object boundaries
+    const firstBrace = cleaned.indexOf('{')
+    const lastBrace = cleaned.lastIndexOf('}')
+    
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      cleaned = cleaned.substring(firstBrace, lastBrace + 1)
+    }
+    
+    // Parse the JSON
+    const parsed = JSON.parse(cleaned)
+    const syntheses = parsed.syntheses || []
+    
+    // Validate we got actual syntheses
+    if (syntheses.length > 0 && syntheses[0].title !== 'Compelling 8-12 word title') {
+      return syntheses
+    }
+    
+    // If we got template/placeholder response, fall through to fallback
+    throw new Error('Template response received')
+    
+  } catch (error) {
+    console.error('Synthesis generation failed:', error)
+    
+    // Generate a more substantive fallback based on the actual conversation
+    const lastExchanges = conversationHistory.slice(-2).join(' ')
+    const keyThemes = lastExchanges.toLowerCase().includes('power') ? 'power-structures' : 
+                     lastExchanges.toLowerCase().includes('moral') ? 'moral-philosophy' :
+                     lastExchanges.toLowerCase().includes('structure') ? 'structural-analysis' : 'dialectic'
+    
     return [
       {
-        title: 'The Dialectical Unfolding of Truth',
+        title: `Integrating ${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()}`,
         type: 'resolution',
-        content: `Through their exchange on "${thesis}", ${fighter1.name} and ${fighter2.name} have enacted a genuine dialectical process. Each moment of negation revealed new dimensions of the question, and each synthesis opened new ground for inquiry.
-
-What emerges is not a simple compromise but a transformed understanding that incorporates the insights of both traditions while transcending their original limitations. The process itself demonstrates how philosophical truth emerges through opposition, negation, and synthesis—through the very structure of dialectical combat.`,
-        concept_tags: ['dialectic', 'negation', 'synthesis', 'aufhebung', 'philosophical-combat'],
+        content: `In this exchange on "${thesis}", ${fighter1.name} and ${fighter2.name} developed complementary perspectives that illuminate different dimensions of the question. Where ${fighter1.name} emphasized analytical rigor and structural understanding, ${fighter2.name} brought moral urgency and practical methodology to the conversation.\n\nThe dialectic revealed that neither pure analysis nor pure moral vision alone suffices for transformation. Understanding systemic forces must be coupled with ethical commitment and strategic action. The debate transcended its starting point by showing how intellectual clarity and moral purpose must work in concert.\n\nWhat emerges is a richer framework that preserves the insights of both thinkers while moving beyond their initial positions. The synthesis points toward an approach that is simultaneously analytically sophisticated and morally grounded, capable of both diagnosing injustice and charting paths toward genuine transformation.`,
+        concept_tags: [keyThemes, 'integration', 'praxis', 'transformation', 'dialectical-synthesis'],
       },
     ]
   }

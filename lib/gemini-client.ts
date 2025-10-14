@@ -14,7 +14,7 @@ const GENERATION_CONFIG = {
   temperature: 0.9,
   topP: 0.95,
   topK: 40,
-  maxOutputTokens: 2048,
+  maxOutputTokens: 4096, // Increased to prevent truncation
 }
 
 // Configuration for synthesis generation
@@ -22,7 +22,7 @@ const SYNTHESIS_CONFIG = {
   temperature: 0.8,
   topP: 0.9,
   topK: 30,
-  maxOutputTokens: 1024,
+  maxOutputTokens: 2048, // Increased for richer synthesis
 }
 
 // Get model for dialectic generation (streaming)
