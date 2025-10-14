@@ -17,6 +17,9 @@ const FIGHTER_IMAGE_MAP: Record<string, string> = {
   'Jacques Derrida': 'Derrida.png',
   'Simone de Beauvoir': 'Simone de Beauvoir.png',
   'Albert Camus': 'Camus.png',
+  'Thomas Hobbes': 'Thomas Hobbes.png',
+  'Jean-Jacques Rousseau': 'Jean-Jacques Rousseau.png',
+  'Antonio Gramsci': 'Antonio Gramsci.png',
   'Malcolm X': 'Malcom X.png',
   'Martin Luther King Jr.': 'Martin Luther King Jr.png',
   'Hannah Arendt': 'Hannah Arendt.png',
@@ -58,6 +61,7 @@ const FIGHTER_IMAGE_MAP: Record<string, string> = {
   'Alexandria Ocasio-Cortez': 'Alexandria Octasio-Cortez.png',
   'Jordan Peterson': 'Jordan Peterson.png',
   'Bill Nye': 'Bill Nye.png',
+  'Judith Butler': 'Judith Butler.png',
 }
 
 /**
