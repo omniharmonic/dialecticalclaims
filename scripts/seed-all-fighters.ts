@@ -774,6 +774,7 @@ async function seed() {
   console.log('\n⚔️ Seeding all fighters...\n')
   let count = 0
   for (const fighter of allFighters) {
+    // @ts-expect-error - Type inference issue with Supabase client
     const { error } = await supabase.from('fighters').insert(fighter)
     if (error) {
       console.error(`❌ Error seeding fighter ${fighter.name}:`, error)
@@ -786,6 +787,7 @@ async function seed() {
   // Seed provocations
   console.log('\n💭 Seeding provocation deck...\n')
   for (const provocation of sampleProvocations) {
+    // @ts-expect-error - Type inference issue with Supabase client
     const { error } = await supabase.from('provocation_deck').insert(provocation)
     if (error) {
       console.error(`Error seeding provocation "${provocation.thesis}":`, error)

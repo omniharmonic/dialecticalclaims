@@ -52,21 +52,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    // Type assertion for dialectic
+    const dialecticData = dialectic as any
+
     // If spawned from synthesis, update usage count and create lineage
     if (parent_synthesis_id) {
       await Promise.all([
+        // @ts-expect-error - RPC function types not defined in generated types
         supabase.rpc('increment_synthesis_usage', {
           synthesis_uuid: parent_synthesis_id,
         }),
+        // @ts-expect-error - Type inference issue with Supabase client
         supabase.from('dialectic_lineage').insert({
           parent_synthesis_id,
-          child_dialectic_id: dialectic.id,
+          child_dialectic_id: dialecticData.id,
         }),
       ])
     }
 
     return NextResponse.json({
-      dialectic_id: dialectic.id,
+      dialectic_id: dialecticData.id,
       status: 'pending',
     })
   } catch (error) {

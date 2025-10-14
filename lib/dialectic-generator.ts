@@ -430,7 +430,7 @@ RESPOND WITH ONLY THE JSON. NO MARKDOWN. NO CODE BLOCKS. NO EXPLANATIONS. JUST T
       {
         title: 'The Dialectical Unfolding of Truth',
         type: 'resolution',
-        content: `Through their exchange on "${originalThesis}", ${fighter1.name} and ${fighter2.name} have enacted a genuine dialectical process. Each moment of negation revealed new dimensions of the question, and each synthesis opened new ground for inquiry.
+        content: `Through their exchange on "${thesis}", ${fighter1.name} and ${fighter2.name} have enacted a genuine dialectical process. Each moment of negation revealed new dimensions of the question, and each synthesis opened new ground for inquiry.
 
 What emerges is not a simple compromise but a transformed understanding that incorporates the insights of both traditions while transcending their original limitations. The process itself demonstrates how philosophical truth emerges through opposition, negation, and synthesis—through the very structure of dialectical combat.`,
         concept_tags: ['dialectic', 'negation', 'synthesis', 'aufhebung', 'philosophical-combat'],

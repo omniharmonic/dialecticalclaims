@@ -22,6 +22,9 @@ export default async function ArchivePage() {
     // Error fetching dialectics
   }
 
+  // Type assertion for joined query result
+  const dialecticsData = dialectics as any
+
   return (
     <div className="arena-container min-h-screen">
       <div className="container mx-auto px-4 py-8 md:py-16">
@@ -33,9 +36,9 @@ export default async function ArchivePage() {
           </p>
         </div>
 
-        {dialectics && dialectics.length > 0 ? (
+        {dialecticsData && dialecticsData.length > 0 ? (
           <div className="grid gap-6 max-w-4xl mx-auto">
-            {dialectics.map((dialectic) => (
+            {dialecticsData.map((dialectic: any) => (
               <Link key={dialectic.id} href={`/arena/${dialectic.id}`}>
                 <Card className="hover:border-primary/50 transition-all cursor-pointer">
                   <CardHeader>

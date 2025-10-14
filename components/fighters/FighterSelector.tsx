@@ -207,10 +207,10 @@ export function FighterSelector({ fighters }: FighterSelectorProps) {
               fighter.id === fighter1?.id || fighter.id === fighter2?.id
             }
             disabled={
-              fighter1 &&
+              !!(fighter1 &&
               fighter2 &&
               fighter.id !== fighter1.id &&
-              fighter.id !== fighter2.id
+              fighter.id !== fighter2.id)
             }
             onClick={() => handleFighterClick(fighter)}
           />
