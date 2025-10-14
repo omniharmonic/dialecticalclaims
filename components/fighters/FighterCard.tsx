@@ -2,6 +2,7 @@
 
 import { Fighter } from '@/types/database'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 interface FighterCardProps {
   fighter: Fighter
@@ -23,10 +24,12 @@ export function FighterCard({ fighter, selected, disabled, onClick }: FighterCar
       {/* Fighter Portrait - placeholder for now */}
       <div className="w-full aspect-[3/4] bg-muted rounded-md mb-3 overflow-hidden relative">
         {fighter.portrait_url ? (
-          <img
+          <Image 
             src={fighter.portrait_url}
             alt={fighter.name}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 25vw, 20vw"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-muted-foreground">

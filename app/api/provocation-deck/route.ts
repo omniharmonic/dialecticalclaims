@@ -12,13 +12,13 @@ export async function GET() {
       .order('thesis')
 
     if (error) {
-      console.error('Error fetching provocation deck:', error)
+      // Error fetching provocation deck
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ provocations: provocations || [] })
   } catch (error) {
-    console.error('Error in provocation deck API:', error)
+    // Error in provocation deck API
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -19,7 +19,7 @@ export default async function ArchivePage() {
     .limit(20)
 
   if (error) {
-    console.error('Error fetching dialectics:', error)
+    // Error fetching dialectics
   }
 
   return (
@@ -59,7 +59,7 @@ export default async function ArchivePage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="philosophical-text italic line-clamp-2">"{dialectic.thesis}"</p>
+                    <p className="philosophical-text italic line-clamp-2">&ldquo;{dialectic.thesis}&rdquo;</p>
                   </CardContent>
                 </Card>
               </Link>

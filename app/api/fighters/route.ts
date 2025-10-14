@@ -15,13 +15,13 @@ export async function GET() {
       .order('name')
 
     if (error) {
-      console.error('Error fetching fighters:', error)
+      // Error fetching fighters
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ fighters })
   } catch (error) {
-    console.error('Error in fighters API:', error)
+    // Error in fighters API
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -12,13 +12,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
       .single()
 
     if (error) {
-      console.error('Error fetching fighter:', error)
+      // Error fetching fighter
       return NextResponse.json({ error: error.message }, { status: 404 })
     }
 
     return NextResponse.json({ fighter })
   } catch (error) {
-    console.error('Error in fighter API:', error)
+    // Error in fighter API
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

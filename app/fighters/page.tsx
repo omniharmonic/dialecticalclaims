@@ -14,7 +14,7 @@ export default async function FightersPage() {
     .order('name')
 
   if (error) {
-    console.error('Error fetching fighters:', error)
+    // Error fetching fighters
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="text-center">

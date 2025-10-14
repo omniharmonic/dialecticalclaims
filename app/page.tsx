@@ -21,7 +21,7 @@ export default function HomePage() {
             <p className="text-xl md:text-2xl mb-2 neon-text" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.1em'}}>
               ⚔️ THE ARENA OF SYNTHETIC THOUGHT ⚔️
             </p>
-            <div className="h-1 w-full bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
+            <div className="h-1 w-full bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
           </div>
           
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
@@ -35,7 +35,7 @@ export default function HomePage() {
               className="btn btn-primary btn-lg text-base px-12 py-6 group relative overflow-hidden"
             >
               <span className="relative z-10">⚔️ ENTER ARENA ⚔️</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
             </Link>
           </div>
           
@@ -51,7 +51,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           <div className="fighter-card text-center p-8 group hover:scale-105 transition-transform">
             <div className="w-20 h-20 mx-auto mb-6 relative">
-              <div className="absolute inset-0 bg-primary rounded-lg blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+              <div className="absolute inset-0 bg-primary rounded-lg blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
               <div className="relative w-full h-full bg-card border-2 border-primary rounded-lg flex items-center justify-center">
                 <span className="text-4xl">🥋</span>
               </div>
@@ -67,7 +67,7 @@ export default function HomePage() {
 
           <div className="fighter-card text-center p-8 group hover:scale-105 transition-transform">
             <div className="w-20 h-20 mx-auto mb-6 relative">
-              <div className="absolute inset-0 bg-accent rounded-lg blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+              <div className="absolute inset-0 bg-accent rounded-lg blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
               <div className="relative w-full h-full bg-card border-2 border-accent rounded-lg flex items-center justify-center">
                 <span className="text-4xl">⚔️</span>
               </div>
@@ -83,7 +83,7 @@ export default function HomePage() {
 
           <div className="fighter-card text-center p-8 group hover:scale-105 transition-transform">
             <div className="w-20 h-20 mx-auto mb-6 relative">
-              <div className="absolute inset-0 bg-secondary rounded-lg blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+              <div className="absolute inset-0 bg-secondary rounded-lg blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
               <div className="relative w-full h-full bg-card border-2 border-secondary rounded-lg flex items-center justify-center">
                 <span className="text-4xl">💎</span>
               </div>

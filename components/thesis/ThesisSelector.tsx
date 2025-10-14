@@ -57,7 +57,7 @@ export function ThesisSelector({ fighter1, fighter2, provocationDeck }: ThesisSe
       const data = await response.json()
       router.push(`/arena/${data.dialectic_id}`)
     } catch (error) {
-      console.error('Error creating dialectic:', error)
+      // Error creating dialectic
       alert('Failed to create dialectic. Please try again.')
       setIsCreating(false)
     }

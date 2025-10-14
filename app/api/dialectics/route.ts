@@ -36,6 +36,7 @@ export async function POST(request: Request) {
     // Create dialectic record
     const { data: dialectic, error } = await supabase
       .from('dialectics')
+      // @ts-expect-error - Supabase type inference issue
       .insert({
         fighter1_id,
         fighter2_id,
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('Error creating dialectic:', error)
+      // Error creating dialectic
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
       status: 'pending',
     })
   } catch (error) {
-    console.error('Error in dialectics API:', error)
+    // Error in dialectics API
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -119,7 +120,7 @@ export async function GET(request: Request) {
     const { data: dialectics, error, count } = await query
 
     if (error) {
-      console.error('Error fetching dialectics:', error)
+      // Error fetching dialectics
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
@@ -130,7 +131,7 @@ export async function GET(request: Request) {
       per_page: perPage,
     })
   } catch (error) {
-    console.error('Error in dialectics list API:', error)
+    // Error in dialectics list API
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

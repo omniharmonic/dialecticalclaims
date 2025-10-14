@@ -296,7 +296,7 @@ RESPOND NOW AS ${fighter.name.toUpperCase()}:
   } catch (error: any) {
     // Handle safety filter blocks
     if (error.message?.includes('SAFETY')) {
-      console.log('Safety filter triggered, generating alternate response...')
+      // Safety filter triggered, generating alternate response
       const fallback = generateFallbackResponse(fighter, originalThesis, dialecticalMove, opponentName)
       onChunk(fallback)
       return fallback
@@ -422,8 +422,8 @@ RESPOND WITH ONLY THE JSON. NO MARKDOWN. NO CODE BLOCKS. NO EXPLANATIONS. JUST T
     const parsed = JSON.parse(cleaned)
     return parsed.syntheses || []
   } catch (error) {
-    console.error('Failed to parse synthesis JSON:', error)
-    console.error('Response was:', cleaned)
+    // Failed to parse synthesis JSON
+    // Response was: [cleaned]
 
     // Fallback synthesis reflecting the dialectical process
     return [

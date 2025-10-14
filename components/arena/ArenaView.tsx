@@ -41,10 +41,10 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
   useEffect(() => {
     const eventSource = new EventSource(`/api/dialectics/${dialectic.id}/stream`)
 
-    eventSource.addEventListener('status', (e) => {
-      const data = JSON.parse(e.data)
-      console.log('Status:', data)
-    })
+      eventSource.addEventListener('status', (e) => {
+        const data = JSON.parse(e.data)
+        // Status update received
+      })
 
     eventSource.addEventListener('round-start', (e) => {
       const data = JSON.parse(e.data)
@@ -81,9 +81,9 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
       setStreamingFighter(null)
     })
 
-    eventSource.addEventListener('synthesis-start', () => {
-      console.log('Generating syntheses...')
-    })
+      eventSource.addEventListener('synthesis-start', () => {
+        // Generating syntheses
+      })
 
     eventSource.addEventListener('synthesis-complete', (e) => {
       const data = JSON.parse(e.data)
@@ -96,8 +96,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
     })
 
     eventSource.addEventListener('error', (e: any) => {
-      console.error('SSE error:', e)
-      
+      // SSE error occurred
       // Try to extract error message if it's in the data
       let message = 'An error occurred while generating the dialectic.'
       if (e.data) {
@@ -148,7 +147,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
           {/* Fighter 1 */}
           <div className="flex-1 max-w-md">
             <div className="bg-gradient-to-r from-blue-500/20 to-transparent border-2 border-blue-500/50 rounded-lg p-4 relative overflow-hidden">
-              <div className="absolute inset-0 bg-blue-500/10 animate-pulse"></div>
+              <div className="absolute inset-0 bg-blue-500/10 animate-pulse" />
               <div className="relative z-10">
                 <h2 className="text-xl md:text-2xl font-bold text-blue-400 mb-1" style={{fontFamily: 'Orbitron, sans-serif'}}>
                   {dialectic.fighter1.name.toUpperCase()}
@@ -169,7 +168,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
           {/* Fighter 2 */}
           <div className="flex-1 max-w-md">
             <div className="bg-gradient-to-l from-red-500/20 to-transparent border-2 border-red-500/50 rounded-lg p-4 relative overflow-hidden">
-              <div className="absolute inset-0 bg-red-500/10 animate-pulse"></div>
+              <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
               <div className="relative z-10 text-right">
                 <h2 className="text-xl md:text-2xl font-bold text-red-400 mb-1" style={{fontFamily: 'Orbitron, sans-serif'}}>
                   {dialectic.fighter2.name.toUpperCase()}
@@ -183,14 +182,14 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
 
         {/* Thesis Display */}
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20 blur-xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20 blur-xl" />
           <Card className="relative p-6 bg-card/90 border-2 border-primary/30">
             <div className="text-center">
               <div className="text-xs text-primary/60 mb-2" style={{fontFamily: '"Press Start 2P", cursive', letterSpacing: '0.1em'}}>
                 💭 THESIS 💭
               </div>
               <p className="text-base md:text-lg italic philosophical-text text-foreground/90">
-                "{dialectic.thesis}"
+                &ldquo;{dialectic.thesis}&rdquo;
               </p>
             </div>
           </Card>
@@ -199,7 +198,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
         {/* Round Indicator - Street Fighter Style */}
         <div className="round-indicator">
           <div className="inline-block px-6 py-3 border-4 border-primary bg-card rounded-lg relative overflow-hidden">
-            <div className="absolute inset-0 bg-primary/10 animate-pulse"></div>
+            <div className="absolute inset-0 bg-primary/10 animate-pulse" />
             <span className="relative z-10">
               ROUND {currentRound} / {dialectic.round_count}
             </span>
@@ -218,10 +217,10 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
 
             {round.fighter1Text && (
               <div className="relative group">
-                <div className="absolute inset-0 bg-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute inset-0 bg-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Card className="relative p-4 md:p-6 bg-gradient-to-br from-blue-950/40 to-card border-2 border-blue-500/30 hover:border-blue-500/60 transition-all">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
                     <h3 className="font-bold text-blue-400" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.05em'}}>
                       {dialectic.fighter1.name.toUpperCase()}
                     </h3>
@@ -235,10 +234,10 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
 
             {round.fighter2Text && (
               <div className="relative group">
-                <div className="absolute inset-0 bg-red-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute inset-0 bg-red-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Card className="relative p-4 md:p-6 bg-gradient-to-br from-red-950/40 to-card border-2 border-red-500/30 hover:border-red-500/60 transition-all">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
                     <h3 className="font-bold text-red-400" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.05em'}}>
                       {dialectic.fighter2.name.toUpperCase()}
                     </h3>
@@ -261,10 +260,10 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
 
             {currentFighter1Text && (
               <div className="relative">
-                <div className="absolute inset-0 bg-blue-500/30 blur-xl animate-pulse"></div>
+                <div className="absolute inset-0 bg-blue-500/30 blur-xl animate-pulse" />
                 <Card className="relative p-4 md:p-6 bg-gradient-to-br from-blue-950/40 to-card border-2 border-blue-500/60 animate-border-pulse">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
                     <h3 className="font-bold text-blue-400" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.05em'}}>
                       {dialectic.fighter1.name.toUpperCase()}
                     </h3>
@@ -277,7 +276,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
                   <div className="philosophical-text whitespace-pre-wrap text-foreground/90 leading-relaxed">
                     {currentFighter1Text}
                     {streamingFighter === 1 && (
-                      <span className="streaming-text"></span>
+                      <span className="streaming-text" />
                     )}
                   </div>
                 </Card>
@@ -286,10 +285,10 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
 
             {currentFighter2Text && (
               <div className="relative">
-                <div className="absolute inset-0 bg-red-500/30 blur-xl animate-pulse"></div>
+                <div className="absolute inset-0 bg-red-500/30 blur-xl animate-pulse" />
                 <Card className="relative p-4 md:p-6 bg-gradient-to-br from-red-950/40 to-card border-2 border-red-500/60 animate-border-pulse">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
                     <h3 className="font-bold text-red-400" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.05em'}}>
                       {dialectic.fighter2.name.toUpperCase()}
                     </h3>
@@ -302,7 +301,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
                   <div className="philosophical-text whitespace-pre-wrap text-foreground/90 leading-relaxed">
                     {currentFighter2Text}
                     {streamingFighter === 2 && (
-                      <span className="streaming-text"></span>
+                      <span className="streaming-text" />
                     )}
                   </div>
                 </Card>
@@ -325,7 +324,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
               >
                 💎 SYNTHESES UNLOCKED 💎
               </h2>
-              <div className="h-1 bg-gradient-to-r from-transparent via-accent to-transparent"></div>
+              <div className="h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
             </div>
             <p className="text-sm text-muted-foreground">
               {syntheses.length} emergent integration{syntheses.length > 1 ? 's' : ''} discovered
@@ -335,7 +334,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
           <div className="grid gap-8">
             {syntheses.map((synthesis, index) => (
               <div key={index} className="relative group">
-                <div className={`absolute inset-0 blur-2xl opacity-0 group-hover:opacity-30 transition-opacity synthesis-glow-${synthesis.type}`}></div>
+                <div className={`absolute inset-0 blur-2xl opacity-0 group-hover:opacity-30 transition-opacity synthesis-glow-${synthesis.type}`} />
                 <Card
                   className={`relative p-6 md:p-8 synthesis-card synthesis-${synthesis.type} transform transition-all duration-300 hover:scale-[1.02]`}
                 >
