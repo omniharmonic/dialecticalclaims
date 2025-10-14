@@ -563,7 +563,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
 
       {/* Status */}
       {status === 'complete' && (
-        <div className="text-center py-8">
+        <div className="text-center py-8 space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -574,6 +574,15 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
             </svg>
             Dialectic Complete
           </div>
+
+          {/* Export Button */}
+          <button
+            onClick={handleExportMarkdown}
+            className="btn btn-primary px-6 py-3 text-base flex items-center gap-3 mx-auto hover:scale-105 transition-transform"
+          >
+            <span>📄</span>
+            <span>Export Full Exchange to Markdown</span>
+          </button>
         </div>
       )}
 
