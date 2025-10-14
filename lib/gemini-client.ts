@@ -31,7 +31,7 @@ const SYNTHESIS_CONFIG = {
 // - 1,500 requests/day vs 50 for experimental
 export function getDialecticModel() {
   return genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash-latest',
+    model: 'gemini-1.5-flash',
     generationConfig: GENERATION_CONFIG,
     safetySettings: [
       {
@@ -57,7 +57,7 @@ export function getDialecticModel() {
 // Get model for synthesis generation
 export function getSynthesisModel() {
   return genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash-latest',
+    model: 'gemini-1.5-flash',
     generationConfig: SYNTHESIS_CONFIG,
     safetySettings: [
       {
