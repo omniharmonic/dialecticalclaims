@@ -1,0 +1,479 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import retro gaming fonts */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+@layer base {
+  :root {
+    /* Cyberpunk color scheme - Neon on dark */
+    --background: 240 10% 3.9%;
+    --foreground: 180 100% 90%;
+    
+    --card: 240 10% 7%;
+    --card-foreground: 180 100% 90%;
+    
+    --popover: 240 10% 7%;
+    --popover-foreground: 180 100% 90%;
+    
+    /* Neon cyan primary */
+    --primary: 180 100% 50%;
+    --primary-foreground: 240 10% 3.9%;
+    
+    /* Neon pink secondary */
+    --secondary: 320 100% 65%;
+    --secondary-foreground: 240 10% 3.9%;
+    
+    --muted: 240 10% 15%;
+    --muted-foreground: 180 50% 60%;
+    
+    /* Neon purple accent */
+    --accent: 280 100% 60%;
+    --accent-foreground: 240 10% 3.9%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 240 20% 20%;
+    --input: 240 10% 15%;
+    --ring: 180 100% 50%;
+    
+    --radius: 0.25rem;
+    
+    /* Custom synthesis colors */
+    --synthesis-resolution: 120 100% 50%;
+    --synthesis-transcendence: 280 100% 60%;
+    --synthesis-paradox: 320 100% 65%;
+    --synthesis-subsumption: 60 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    /* Cyberpunk grid background */
+    background-image: 
+      linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    position: relative;
+  }
+
+  /* Scanline effect for retro CRT look */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.3;
+  }
+
+  /* CRT screen vignette */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .philosophical-text {
+    @apply font-serif text-foreground leading-relaxed;
+  }
+
+  /* Arcade-style fighter cards */
+  .fighter-card {
+    @apply bg-card border-2 border-border rounded-lg p-4 transition-all duration-200;
+    background: linear-gradient(135deg, 
+      rgba(0, 255, 255, 0.05) 0%, 
+      rgba(20, 20, 40, 0.95) 50%, 
+      rgba(255, 0, 255, 0.05) 100%);
+    box-shadow: 
+      0 0 20px rgba(0, 255, 255, 0.1),
+      inset 0 0 20px rgba(0, 255, 255, 0.05);
+  }
+
+  .fighter-card:hover {
+    @apply border-primary;
+    box-shadow: 
+      0 0 30px rgba(0, 255, 255, 0.4),
+      0 0 60px rgba(0, 255, 255, 0.2),
+      inset 0 0 20px rgba(0, 255, 255, 0.1);
+    transform: translateY(-4px) scale(1.02);
+  }
+
+  .fighter-card.selected {
+    @apply border-primary bg-primary/10;
+    box-shadow: 
+      0 0 40px rgba(0, 255, 255, 0.6),
+      0 0 80px rgba(0, 255, 255, 0.3),
+      inset 0 0 30px rgba(0, 255, 255, 0.15);
+    animation: pulse-neon 2s infinite;
+  }
+
+  /* Arena styling */
+  .arena-container {
+    background: 
+      radial-gradient(ellipse at top, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+      linear-gradient(180deg, #0a0a15 0%, #050510 100%);
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* Neon text effects */
+  .neon-text {
+    text-shadow: 
+      0 0 10px rgba(0, 255, 255, 0.8),
+      0 0 20px rgba(0, 255, 255, 0.5),
+      0 0 30px rgba(0, 255, 255, 0.3),
+      0 0 40px rgba(0, 255, 255, 0.2);
+  }
+
+  .neon-text-pink {
+    text-shadow: 
+      0 0 10px rgba(255, 0, 255, 0.8),
+      0 0 20px rgba(255, 0, 255, 0.5),
+      0 0 30px rgba(255, 0, 255, 0.3);
+  }
+
+  /* Streaming cursor with neon glow */
+  .streaming-text::after {
+    content: '▮';
+    @apply text-primary;
+    animation: cursor-blink 1s infinite, neon-pulse 2s infinite;
+    text-shadow: 
+      0 0 10px rgba(0, 255, 255, 1),
+      0 0 20px rgba(0, 255, 255, 0.5);
+  }
+
+  /* Enhanced synthesis cards */
+  .synthesis-card {
+    @apply bg-card border-2 border-border rounded-xl p-6 transition-all duration-300;
+    background: linear-gradient(135deg, 
+      rgba(20, 20, 40, 0.95) 0%, 
+      rgba(10, 10, 25, 0.98) 100%);
+    box-shadow: 
+      0 0 20px rgba(0, 255, 255, 0.1),
+      inset 0 0 20px rgba(0, 255, 255, 0.05);
+  }
+
+  .synthesis-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 
+      0 0 30px rgba(0, 255, 255, 0.3),
+      inset 0 0 20px rgba(0, 255, 255, 0.1);
+  }
+
+  .synthesis-resolution {
+    @apply border-green-500/50;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+  }
+
+  .synthesis-resolution:hover {
+    @apply border-green-500;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.4);
+  }
+
+  .synthesis-transcendence {
+    @apply border-purple-500/50;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+  }
+
+  .synthesis-transcendence:hover {
+    @apply border-purple-500;
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
+  }
+
+  .synthesis-paradox {
+    @apply border-pink-500/50;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.2);
+  }
+
+  .synthesis-paradox:hover {
+    @apply border-pink-500;
+    box-shadow: 0 0 30px rgba(255, 0, 255, 0.4);
+  }
+
+  .synthesis-subsumption {
+    @apply border-yellow-500/50;
+    box-shadow: 0 0 20px rgba(255, 255, 0, 0.2);
+  }
+
+  .synthesis-subsumption:hover {
+    @apply border-yellow-500;
+    box-shadow: 0 0 30px rgba(255, 255, 0, 0.4);
+  }
+}
+
+@layer components {
+  /* Arcade button styles */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background;
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary text-primary-foreground;
+    box-shadow: 
+      0 0 20px rgba(0, 255, 255, 0.5),
+      inset 0 0 10px rgba(0, 255, 255, 0.2);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 
+      0 0 30px rgba(0, 255, 255, 0.8),
+      0 0 60px rgba(0, 255, 255, 0.4),
+      inset 0 0 15px rgba(0, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    @apply btn bg-secondary text-secondary-foreground;
+    box-shadow: 
+      0 0 20px rgba(255, 0, 255, 0.5),
+      inset 0 0 10px rgba(255, 0, 255, 0.2);
+  }
+
+  .btn-secondary:hover {
+    box-shadow: 
+      0 0 30px rgba(255, 0, 255, 0.8),
+      0 0 60px rgba(255, 0, 255, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .btn-outline {
+    @apply btn border-2 border-primary bg-transparent text-primary;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+  }
+
+  .btn-outline:hover {
+    @apply bg-primary/10;
+    box-shadow: 
+      0 0 20px rgba(0, 255, 255, 0.6),
+      inset 0 0 10px rgba(0, 255, 255, 0.2);
+  }
+
+  .btn-ghost {
+    @apply btn hover:bg-accent/20 hover:text-accent;
+  }
+
+  .btn-sm {
+    @apply h-9 px-3 text-xs;
+  }
+
+  .btn-md {
+    @apply h-10 py-2 px-4 text-sm;
+  }
+
+  .btn-lg {
+    @apply h-12 px-8 text-base;
+  }
+
+  /* VS badge for fighter comparison */
+  .vs-badge {
+    @apply text-4xl font-bold;
+    font-family: 'Press Start 2P', cursive;
+    color: #ff0080;
+    text-shadow: 
+      0 0 10px rgba(255, 0, 128, 1),
+      0 0 20px rgba(255, 0, 128, 0.8),
+      0 0 30px rgba(255, 0, 128, 0.6),
+      0 0 40px rgba(255, 0, 128, 0.4);
+    animation: pulse-neon 2s infinite;
+  }
+
+  /* Arcade title styling */
+  .arcade-title {
+    font-family: 'Press Start 2P', cursive;
+    text-shadow: 
+      3px 3px 0 rgba(255, 0, 255, 0.5),
+      -3px -3px 0 rgba(0, 255, 255, 0.5),
+      0 0 20px rgba(255, 255, 255, 0.5);
+    animation: glitch 5s infinite;
+  }
+
+  /* Round indicator */
+  .round-indicator {
+    @apply text-center py-4 my-6;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.875rem;
+    color: #00ffff;
+    text-shadow: 
+      0 0 10px rgba(0, 255, 255, 1),
+      0 0 20px rgba(0, 255, 255, 0.5);
+    letter-spacing: 0.1em;
+    animation: pulse-neon 2s infinite;
+  }
+}
+
+/* Animations */
+@keyframes pulse-neon {
+  0%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.8;
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes neon-pulse {
+  0%, 100% {
+    text-shadow: 
+      0 0 10px rgba(0, 255, 255, 1),
+      0 0 20px rgba(0, 255, 255, 0.5);
+  }
+  50% {
+    text-shadow: 
+      0 0 20px rgba(0, 255, 255, 1),
+      0 0 40px rgba(0, 255, 255, 0.8),
+      0 0 60px rgba(0, 255, 255, 0.5);
+  }
+}
+
+@keyframes cursor-blink {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+@keyframes glitch {
+  0%, 90%, 100% {
+    transform: translate(0, 0);
+    filter: hue-rotate(0deg);
+  }
+  92% {
+    transform: translate(-2px, 2px);
+    filter: hue-rotate(90deg);
+  }
+  94% {
+    transform: translate(2px, -2px);
+    filter: hue-rotate(-90deg);
+  }
+  96% {
+    transform: translate(-2px, -2px);
+    filter: hue-rotate(180deg);
+  }
+  98% {
+    transform: translate(2px, 2px);
+    filter: hue-rotate(-180deg);
+  }
+}
+
+/* Glitch effect utility class */
+.glitch {
+  position: relative;
+  animation: glitch 5s infinite;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+}
+
+.glitch::before {
+  color: #ff00ff;
+  z-index: -1;
+  animation: glitch-before 3s infinite;
+}
+
+.glitch::after {
+  color: #00ffff;
+  z-index: -2;
+  animation: glitch-after 2s infinite;
+}
+
+@keyframes glitch-before {
+  0%, 96%, 100% {
+    transform: translate(0);
+  }
+  97% {
+    transform: translate(-2px, 2px);
+  }
+  98% {
+    transform: translate(2px, -2px);
+  }
+  99% {
+    transform: translate(-2px, -2px);
+  }
+}
+
+@keyframes glitch-after {
+  0%, 95%, 100% {
+    transform: translate(0);
+  }
+  96% {
+    transform: translate(2px, 0);
+  }
+  97% {
+    transform: translate(-2px, 0);
+  }
+  98% {
+    transform: translate(0, 2px);
+  }
+  99% {
+    transform: translate(0, -2px);
+  }
+}
+
+@keyframes animate-border-pulse {
+  0%, 100% {
+    border-color: currentColor;
+    box-shadow: 0 0 20px currentColor;
+  }
+  50% {
+    border-color: transparent;
+    box-shadow: 0 0 40px currentColor;
+  }
+}
+
+.animate-border-pulse {
+  animation: animate-border-pulse 2s ease-in-out infinite;
+}

@@ -1,0 +1,445 @@
+'use client'
+
+import { useEffect, useState, useRef } from 'react'
+import { Dialectic, Fighter, Synthesis } from '@/types/database'
+import { Card, CardContent } from '@/components/ui/Card'
+import { useRouter } from 'next/navigation'
+
+interface ArenaViewProps {
+  dialectic: Dialectic & {
+    fighter1: Fighter
+    fighter2: Fighter
+  }
+}
+
+interface RoundData {
+  fighter1Text: string
+  fighter2Text: string
+}
+
+export function ArenaView({ dialectic }: ArenaViewProps) {
+  const router = useRouter()
+  const [currentRound, setCurrentRound] = useState(0)
+  const [rounds, setRounds] = useState<RoundData[]>([])
+  const [currentFighter1Text, setCurrentFighter1Text] = useState('')
+  const [currentFighter2Text, setCurrentFighter2Text] = useState('')
+  const [syntheses, setSyntheses] = useState<Synthesis[]>([])
+  const [status, setStatus] = useState<'streaming' | 'complete' | 'error'>('streaming')
+  const [streamingFighter, setStreamingFighter] = useState<1 | 2 | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string>('')
+  const bottomRef = useRef<HTMLDivElement>(null)
+  
+  // Refs to track current text (avoids closure issues)
+  const fighter1TextRef = useRef('')
+  const fighter2TextRef = useRef('')
+
+  // Auto-scroll to bottom when new content arrives
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [currentFighter1Text, currentFighter2Text, rounds, syntheses])
+
+  useEffect(() => {
+    const eventSource = new EventSource(`/api/dialectics/${dialectic.id}/stream`)
+
+    eventSource.addEventListener('status', (e) => {
+      const data = JSON.parse(e.data)
+      console.log('Status:', data)
+    })
+
+    eventSource.addEventListener('round-start', (e) => {
+      const data = JSON.parse(e.data)
+      setCurrentRound(data.roundNumber)
+      // Reset refs and state
+      fighter1TextRef.current = ''
+      fighter2TextRef.current = ''
+      setCurrentFighter1Text('')
+      setCurrentFighter2Text('')
+      setStreamingFighter(1)
+    })
+
+    eventSource.addEventListener('fighter1-chunk', (e) => {
+      const data = JSON.parse(e.data)
+      fighter1TextRef.current += data.chunk
+      setCurrentFighter1Text((prev) => prev + data.chunk)
+    })
+
+    eventSource.addEventListener('fighter2-chunk', (e) => {
+      const data = JSON.parse(e.data)
+      fighter2TextRef.current += data.chunk
+      setCurrentFighter2Text((prev) => prev + data.chunk)
+      setStreamingFighter(2)
+    })
+
+    eventSource.addEventListener('round-complete', (e) => {
+      const data = JSON.parse(e.data)
+      // Use refs to get the current text values (avoids stale closure)
+      const newRound = {
+        fighter1Text: fighter1TextRef.current,
+        fighter2Text: fighter2TextRef.current,
+      }
+      setRounds((prev) => [...prev, newRound])
+      setStreamingFighter(null)
+    })
+
+    eventSource.addEventListener('synthesis-start', () => {
+      console.log('Generating syntheses...')
+    })
+
+    eventSource.addEventListener('synthesis-complete', (e) => {
+      const data = JSON.parse(e.data)
+      setSyntheses(data.syntheses)
+    })
+
+    eventSource.addEventListener('complete', () => {
+      setStatus('complete')
+      eventSource.close()
+    })
+
+    eventSource.addEventListener('error', (e: any) => {
+      console.error('SSE error:', e)
+      
+      // Try to extract error message if it's in the data
+      let message = 'An error occurred while generating the dialectic.'
+      if (e.data) {
+        try {
+          const errorData = JSON.parse(e.data)
+          if (errorData.error) {
+            // Check for rate limit errors
+            if (errorData.error.includes('429') || errorData.error.includes('quota')) {
+              message = '⚠️ Gemini API rate limit reached. Free tier allows 50 requests/day. Please try again later or upgrade your API key.'
+            } else if (errorData.error.includes('SAFETY')) {
+              message = '⚠️ Content was blocked by safety filters. Try a different thesis or fighters.'
+            } else {
+              message = errorData.error
+            }
+          }
+        } catch (parseError) {
+          // Use default message
+        }
+      }
+      
+      setErrorMessage(message)
+      setStatus('error')
+      eventSource.close()
+    })
+
+    return () => {
+      eventSource.close()
+    }
+  }, [dialectic.id])
+
+  return (
+    <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-8">
+      {/* Back Button */}
+      <div className="mb-4">
+        <button
+          onClick={() => router.push('/')}
+          className="btn btn-ghost text-sm px-4 py-2 flex items-center gap-2 hover:text-primary transition-colors"
+        >
+          <span>←</span>
+          <span>Back to Home</span>
+        </button>
+      </div>
+
+      {/* Header - Street Fighter Style HUD */}
+      <div className="space-y-6 mb-8">
+        {/* Fighter Name Plates */}
+        <div className="flex items-center justify-between gap-4">
+          {/* Fighter 1 */}
+          <div className="flex-1 max-w-md">
+            <div className="bg-gradient-to-r from-blue-500/20 to-transparent border-2 border-blue-500/50 rounded-lg p-4 relative overflow-hidden">
+              <div className="absolute inset-0 bg-blue-500/10 animate-pulse"></div>
+              <div className="relative z-10">
+                <h2 className="text-xl md:text-2xl font-bold text-blue-400 mb-1" style={{fontFamily: 'Orbitron, sans-serif'}}>
+                  {dialectic.fighter1.name.toUpperCase()}
+                </h2>
+                <p className="text-xs text-blue-300/70">{dialectic.fighter1.fighter_name}</p>
+              </div>
+              <div className="absolute -right-4 -bottom-4 text-6xl opacity-10">🥊</div>
+            </div>
+          </div>
+
+          {/* VS Badge */}
+          <div className="flex-shrink-0">
+            <div className="vs-badge px-4 py-2 bg-card border-4 border-primary rounded-lg">
+              VS
+            </div>
+          </div>
+
+          {/* Fighter 2 */}
+          <div className="flex-1 max-w-md">
+            <div className="bg-gradient-to-l from-red-500/20 to-transparent border-2 border-red-500/50 rounded-lg p-4 relative overflow-hidden">
+              <div className="absolute inset-0 bg-red-500/10 animate-pulse"></div>
+              <div className="relative z-10 text-right">
+                <h2 className="text-xl md:text-2xl font-bold text-red-400 mb-1" style={{fontFamily: 'Orbitron, sans-serif'}}>
+                  {dialectic.fighter2.name.toUpperCase()}
+                </h2>
+                <p className="text-xs text-red-300/70">{dialectic.fighter2.fighter_name}</p>
+              </div>
+              <div className="absolute -left-4 -bottom-4 text-6xl opacity-10">🥊</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Thesis Display */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20 blur-xl"></div>
+          <Card className="relative p-6 bg-card/90 border-2 border-primary/30">
+            <div className="text-center">
+              <div className="text-xs text-primary/60 mb-2" style={{fontFamily: '"Press Start 2P", cursive', letterSpacing: '0.1em'}}>
+                💭 THESIS 💭
+              </div>
+              <p className="text-base md:text-lg italic philosophical-text text-foreground/90">
+                "{dialectic.thesis}"
+              </p>
+            </div>
+          </Card>
+        </div>
+
+        {/* Round Indicator - Street Fighter Style */}
+        <div className="round-indicator">
+          <div className="inline-block px-6 py-3 border-4 border-primary bg-card rounded-lg relative overflow-hidden">
+            <div className="absolute inset-0 bg-primary/10 animate-pulse"></div>
+            <span className="relative z-10">
+              ROUND {currentRound} / {dialectic.round_count}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* All Rounds - Chat-like Display */}
+      <div className="space-y-6">
+        {/* Completed Rounds */}
+        {rounds.map((round, index) => (
+          <div key={`round-${index}`} className="space-y-4">
+            <div className="round-indicator text-center py-3">
+              <span className="text-xs">━━━ ROUND {index + 1} ━━━</span>
+            </div>
+
+            {round.fighter1Text && (
+              <div className="relative group">
+                <div className="absolute inset-0 bg-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <Card className="relative p-4 md:p-6 bg-gradient-to-br from-blue-950/40 to-card border-2 border-blue-500/30 hover:border-blue-500/60 transition-all">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                    <h3 className="font-bold text-blue-400" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.05em'}}>
+                      {dialectic.fighter1.name.toUpperCase()}
+                    </h3>
+                  </div>
+                  <div className="philosophical-text whitespace-pre-wrap text-foreground/90 leading-relaxed">
+                    {round.fighter1Text}
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {round.fighter2Text && (
+              <div className="relative group">
+                <div className="absolute inset-0 bg-red-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <Card className="relative p-4 md:p-6 bg-gradient-to-br from-red-950/40 to-card border-2 border-red-500/30 hover:border-red-500/60 transition-all">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                    <h3 className="font-bold text-red-400" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.05em'}}>
+                      {dialectic.fighter2.name.toUpperCase()}
+                    </h3>
+                  </div>
+                  <div className="philosophical-text whitespace-pre-wrap text-foreground/90 leading-relaxed">
+                    {round.fighter2Text}
+                  </div>
+                </Card>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* Current Round (Streaming) */}
+        {currentRound > rounds.length && (
+          <div className="space-y-4">
+            <div className="round-indicator text-center py-3 animate-pulse">
+              <span className="text-xs">━━━ ROUND {currentRound} ━━━</span>
+            </div>
+
+            {currentFighter1Text && (
+              <div className="relative">
+                <div className="absolute inset-0 bg-blue-500/30 blur-xl animate-pulse"></div>
+                <Card className="relative p-4 md:p-6 bg-gradient-to-br from-blue-950/40 to-card border-2 border-blue-500/60 animate-border-pulse">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                    <h3 className="font-bold text-blue-400" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.05em'}}>
+                      {dialectic.fighter1.name.toUpperCase()}
+                    </h3>
+                    {streamingFighter === 1 && (
+                      <span className="text-xs text-blue-400 ml-2" style={{fontFamily: '"Press Start 2P", cursive'}}>
+                        ⚡ LIVE
+                      </span>
+                    )}
+                  </div>
+                  <div className="philosophical-text whitespace-pre-wrap text-foreground/90 leading-relaxed">
+                    {currentFighter1Text}
+                    {streamingFighter === 1 && (
+                      <span className="streaming-text"></span>
+                    )}
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {currentFighter2Text && (
+              <div className="relative">
+                <div className="absolute inset-0 bg-red-500/30 blur-xl animate-pulse"></div>
+                <Card className="relative p-4 md:p-6 bg-gradient-to-br from-red-950/40 to-card border-2 border-red-500/60 animate-border-pulse">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                    <h3 className="font-bold text-red-400" style={{fontFamily: 'Orbitron, sans-serif', letterSpacing: '0.05em'}}>
+                      {dialectic.fighter2.name.toUpperCase()}
+                    </h3>
+                    {streamingFighter === 2 && (
+                      <span className="text-xs text-red-400 ml-2" style={{fontFamily: '"Press Start 2P", cursive'}}>
+                        ⚡ LIVE
+                      </span>
+                    )}
+                  </div>
+                  <div className="philosophical-text whitespace-pre-wrap text-foreground/90 leading-relaxed">
+                    {currentFighter2Text}
+                    {streamingFighter === 2 && (
+                      <span className="streaming-text"></span>
+                    )}
+                  </div>
+                </Card>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Syntheses */}
+      {syntheses.length > 0 && (
+        <div className="space-y-8 pt-12 mt-12 border-t-4 border-primary/30">
+          {/* Syntheses Header */}
+          <div className="text-center space-y-4">
+            <div className="inline-block">
+              <h2 
+                className="text-2xl md:text-4xl font-bold mb-2 arcade-title" 
+                style={{fontFamily: 'Orbitron, sans-serif'}}
+                data-text="SYNTHESES UNLOCKED"
+              >
+                💎 SYNTHESES UNLOCKED 💎
+              </h2>
+              <div className="h-1 bg-gradient-to-r from-transparent via-accent to-transparent"></div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {syntheses.length} emergent integration{syntheses.length > 1 ? 's' : ''} discovered
+            </p>
+          </div>
+
+          <div className="grid gap-8">
+            {syntheses.map((synthesis, index) => (
+              <div key={index} className="relative group">
+                <div className={`absolute inset-0 blur-2xl opacity-0 group-hover:opacity-30 transition-opacity synthesis-glow-${synthesis.type}`}></div>
+                <Card
+                  className={`relative p-6 md:p-8 synthesis-card synthesis-${synthesis.type} transform transition-all duration-300 hover:scale-[1.02]`}
+                >
+                  <div className="flex flex-col md:flex-row items-start justify-between gap-4 mb-6">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="text-2xl">
+                          {synthesis.type === 'resolution' && '✅'}
+                          {synthesis.type === 'transcendence' && '🚀'}
+                          {synthesis.type === 'paradox' && '🌀'}
+                          {synthesis.type === 'subsumption' && '🔄'}
+                        </span>
+                        <h3 className="text-xl md:text-2xl font-bold" style={{fontFamily: 'Orbitron, sans-serif'}}>
+                          {synthesis.title}
+                        </h3>
+                      </div>
+                      <span 
+                        className="inline-block text-xs px-4 py-1.5 rounded-full font-bold uppercase tracking-wider"
+                        style={{
+                          fontFamily: '"Press Start 2P", cursive',
+                          background: synthesis.type === 'resolution' ? 'rgba(0, 255, 0, 0.2)' :
+                                     synthesis.type === 'transcendence' ? 'rgba(168, 85, 247, 0.2)' :
+                                     synthesis.type === 'paradox' ? 'rgba(255, 0, 255, 0.2)' :
+                                     'rgba(255, 255, 0, 0.2)',
+                          color: synthesis.type === 'resolution' ? '#00ff00' :
+                                synthesis.type === 'transcendence' ? '#a855f7' :
+                                synthesis.type === 'paradox' ? '#ff00ff' :
+                                '#ffff00',
+                          boxShadow: `0 0 20px ${
+                            synthesis.type === 'resolution' ? 'rgba(0, 255, 0, 0.3)' :
+                            synthesis.type === 'transcendence' ? 'rgba(168, 85, 247, 0.3)' :
+                            synthesis.type === 'paradox' ? 'rgba(255, 0, 255, 0.3)' :
+                            'rgba(255, 255, 0, 0.3)'
+                          }`
+                        }}
+                      >
+                        {synthesis.type}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="philosophical-text mb-6 whitespace-pre-wrap text-foreground/90 leading-relaxed border-l-4 border-primary/30 pl-4">
+                    {synthesis.content}
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 pt-4 border-t border-border/30">
+                    {synthesis.concept_tags.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="text-xs px-3 py-1.5 bg-primary/10 text-primary border border-primary/30 rounded hover:bg-primary/20 transition-colors"
+                        style={{fontFamily: 'Orbitron, sans-serif'}}
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Status */}
+      {status === 'complete' && (
+        <div className="text-center py-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Dialectic Complete
+          </div>
+        </div>
+      )}
+
+      {status === 'error' && (
+        <div className="text-center py-8">
+          <div className="max-w-2xl mx-auto space-y-4">
+            <div className="flex items-start gap-3 px-6 py-4 bg-red-500/20 text-red-400 rounded-lg border border-red-500/30">
+              <svg className="w-6 h-6 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <div className="text-left">
+                <div className="font-semibold mb-1">Dialectic Generation Failed</div>
+                <div className="text-sm">{errorMessage || 'An error occurred. Please try again.'}</div>
+              </div>
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Scroll anchor */}
+      <div ref={bottomRef} />
+    </div>
+  )
+}
+
