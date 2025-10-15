@@ -29,14 +29,30 @@ function fixCommonJsonErrors(jsonStr: string): string {
 function repairJsonStructure(jsonStr: string): string {
   let repaired = jsonStr
 
+  console.log('🔧 Attempting JSON repair on:', repaired.substring(0, 200) + '...')
+
   // Handle truncated JSON - if it ends abruptly, try to close it properly
   if (repaired.endsWith('...')) {
     repaired = repaired.slice(0, -3)
   }
 
+  // Remove any trailing incomplete words or characters
+  repaired = repaired.replace(/[^}\]"]*$/, '')
+
   // If the content ends mid-string, close the string and structure
   if (repaired.match(/"content":\s*"[^"]*$/)) {
     repaired += '"'
+  }
+
+  // Fix common truncation patterns
+  if (repaired.match(/"title":\s*"[^"]*$/)) {
+    repaired += '"'
+  }
+  if (repaired.match(/"concept_tags":\s*\["[^"]*$/)) {
+    repaired += '"]'
+  }
+  if (repaired.match(/"concept_tags":\s*\[[^\]]*$/)) {
+    repaired += ']'
   }
 
   // Ensure the structure is complete
@@ -50,6 +66,8 @@ function repairJsonStructure(jsonStr: string): string {
   let closeBraces = (repaired.match(/}/g) || []).length
   const openBrackets = (repaired.match(/\[/g) || []).length
   let closeBrackets = (repaired.match(/]/g) || []).length
+
+  console.log(`🔧 Brace/bracket count: open braces=${openBraces}, close braces=${closeBraces}, open brackets=${openBrackets}, close brackets=${closeBrackets}`)
 
   // Add missing closing braces for objects
   while (closeBraces < openBraces) {
@@ -66,6 +84,7 @@ function repairJsonStructure(jsonStr: string): string {
   // Fix incomplete strings by closing them
   const unclosedStrings = repaired.match(/"[^"]*$/g)
   if (unclosedStrings) {
+    console.log('🔧 Found unclosed string, adding closing quote')
     repaired += '"'
   }
 
@@ -79,6 +98,32 @@ function repairJsonStructure(jsonStr: string): string {
     return `"content": "${fixed}"`
   })
 
+  // Handle case where response starts mid-object (no opening brace)
+  if (!repaired.trim().startsWith('{') && repaired.includes('"syntheses"')) {
+    repaired = '{' + repaired
+  }
+
+  // Last resort: if we have synthesis data but malformed structure, try to extract and reconstruct
+  if (repaired.includes('"title"') && repaired.includes('"content"') && !repaired.includes('"syntheses"')) {
+    console.log('🔧 Attempting structural reconstruction')
+
+    // Try to find synthesis objects and wrap them properly
+    const titleMatches = repaired.match(/"title":\s*"[^"]+"/g) || []
+    const contentMatches = repaired.match(/"content":\s*"[^"]+"/g) || []
+
+    if (titleMatches.length > 0 && contentMatches.length > 0) {
+      const syntheses = []
+      const types = ['resolution', 'transcendence', 'paradox']
+
+      for (let i = 0; i < Math.min(titleMatches.length, contentMatches.length, 3); i++) {
+        syntheses.push(`{${titleMatches[i]}, "type": "${types[i] || 'resolution'}", ${contentMatches[i]}, "concept_tags": ["philosophical-analysis"]}`)
+      }
+
+      repaired = `{"syntheses": [${syntheses.join(', ')}]}`
+    }
+  }
+
+  console.log('🔧 JSON repair complete, result length:', repaired.length)
   return repaired
 }
 
@@ -89,38 +134,87 @@ function generateAnalyticalFallbackSyntheses(
   fighter1: Fighter,
   fighter2: Fighter
 ): any[] {
+  console.log('🔄 Generating enhanced analytical fallback syntheses')
+
   const analysis = analyzeConversationForSynthesis(conversationHistory, fighter1, fighter2)
 
-  // Extract actual content from the conversation
+  // Extract actual content from the conversation with more sophisticated analysis
   const fighter1Content = analysis.fighter1Quotes.join(' ')
   const fighter2Content = analysis.fighter2Quotes.join(' ')
   const themes = analysis.conversationThemes
 
-  // Generate insights based on actual conversation content
-  const resolutionTitle = `${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()}: Complementary insights on ${themes[0] || 'philosophical truth'}`
-  const transcendenceTitle = `Beyond the debate: What ${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()} revealed together`
-  const paradoxTitle = `The productive tension between ${fighter1.name.split(' ').pop()}'s and ${fighter2.name.split(' ').pop()}'s approaches`
+  // Extract key phrases and concepts from the actual conversation
+  const fullConversation = conversationHistory.join(' ').toLowerCase()
+  const keyTerms = extractKeyTermsFromConversation(fullConversation)
+  const centralConcepts = extractCentralConcepts(conversationHistory, themes)
+
+  // Generate more sophisticated titles based on actual content
+  const resolutionTitle = `How ${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()} reveal complementary truths about ${keyTerms[0] || themes[0] || 'the human condition'}`
+  const transcendenceTitle = `The deeper question: What emerges beyond ${fighter1.name.split(' ').pop()}'s and ${fighter2.name.split(' ').pop()}'s debate about ${centralConcepts[0] || 'fundamental truth'}`
+  const paradoxTitle = `Why ${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()} needed their disagreement to discover shared wisdom`
+
+  // Generate sophisticated content based on actual conversation analysis
+  const resolutionContent = generateResolutionContent(fighter1, fighter2, thesis, themes, fighter1Content, fighter2Content, keyTerms)
+  const transcendenceContent = generateTranscendenceContent(fighter1, fighter2, thesis, themes, centralConcepts, analysis.engagements)
+  const paradoxContent = generateParadoxContent(fighter1, fighter2, thesis, themes, analysis.totalExchanges)
 
   return [
     {
       title: resolutionTitle,
       type: 'resolution',
-      content: `In their exchange about "${thesis}", ${fighter1.name} and ${fighter2.name} approached the question from notably different angles. ${fighter1.name} emphasized ${getApproachFromContent(fighter1Content, fighter1)}, while ${fighter2.name} focused on ${getApproachFromContent(fighter2Content, fighter2)}.\n\nWhat became clear through their dialogue is that these approaches actually complement each other rather than conflict. ${fighter1.name}'s perspective provides ${getStrengthFromContent(fighter1Content)}, while ${fighter2.name}'s viewpoint offers ${getStrengthFromContent(fighter2Content)}.\n\nThe synthesis that emerges is richer than either position alone: ${generateInsightFromThemes(themes, thesis)}. This shows how philosophical truth often requires multiple perspectives working in tension with each other.`,
+      content: resolutionContent,
       concept_tags: themes.concat(['complementary-perspectives', 'dialectical-synthesis', 'philosophical-dialogue']),
     },
     {
       title: transcendenceTitle,
       type: 'transcendence',
-      content: `The conversation between ${fighter1.name} and ${fighter2.name} about "${thesis}" opened up questions that go beyond their initial disagreement. What started as a debate about specific philosophical positions evolved into an exploration of ${themes[0] || 'fundamental philosophical questions'}.\n\nThe deeper framework that emerged from their exchange suggests that the original thesis needs to be understood within a broader context of ${themes.join(' and ')}. Their dialogue revealed that the question isn't just about choosing between their positions, but about understanding how different philosophical approaches can illuminate different aspects of complex problems.\n\nThis conversation points toward a more sophisticated understanding of ${getMetaInsight(themes, thesis)}, one that recognizes the value of intellectual tension and the limitations of any single perspective.`,
+      content: transcendenceContent,
       concept_tags: themes.concat(['meta-philosophy', 'framework-thinking', 'transcendent-understanding']),
     },
     {
       title: paradoxTitle,
       type: 'paradox',
-      content: `One of the most interesting aspects of this exchange is how ${fighter1.name} and ${fighter2.name} needed their disagreement to discover what they actually had in common. Their initial positions seemed incompatible, but the process of engaging with each other revealed deeper shared concerns.\n\n${fighter1.name}'s arguments pushed ${fighter2.name} to clarify and strengthen their position, while ${fighter2.name}'s challenges forced ${fighter1.name} to address blind spots in their reasoning. This created a productive paradox: the more vigorously they disagreed, the more they contributed to a shared understanding.\n\nThis illustrates something important about philosophical dialogue - that genuine disagreement can be more valuable than superficial agreement. The tension between their positions generated insights that neither could have reached alone, showing how conflict can be a form of collaboration.`,
+      content: paradoxContent,
       concept_tags: themes.concat(['productive-conflict', 'philosophical-method', 'necessary-tension', 'collaborative-disagreement']),
     }
   ]
+}
+
+function generateResolutionContent(fighter1: Fighter, fighter2: Fighter, thesis: string, themes: string[], fighter1Content: string, fighter2Content: string, keyTerms: string[]): string {
+  const approach1 = getApproachFromContent(fighter1Content, fighter1)
+  const approach2 = getApproachFromContent(fighter2Content, fighter2)
+  const strength1 = getStrengthFromContent(fighter1Content)
+  const strength2 = getStrengthFromContent(fighter2Content)
+  const insight = generateInsightFromThemes(themes, thesis)
+  const keyTerm = keyTerms[0] || themes[0] || 'philosophical understanding'
+
+  return `In their exchange about "${thesis}", ${fighter1.name} and ${fighter2.name} approached the question from notably different angles that ultimately proved complementary. ${fighter1.name} emphasized ${approach1}, bringing ${strength1} to the discussion. Meanwhile, ${fighter2.name} focused on ${approach2}, offering ${strength2} that illuminated different aspects of the problem.
+
+What became clear through their dialogue is that these approaches don't merely coexist—they actively strengthen each other. ${fighter1.name}'s perspective on ${keyTerm} provided necessary grounding for ${fighter2.name}'s insights, while ${fighter2.name}'s analysis challenged ${fighter1.name} to examine assumptions that might otherwise have remained unquestioned.
+
+The synthesis that emerges is far richer than either position alone: ${insight}. This demonstrates how philosophical truth often requires multiple perspectives working in dynamic tension, each exposing what the other cannot see on its own.`
+}
+
+function generateTranscendenceContent(fighter1: Fighter, fighter2: Fighter, thesis: string, themes: string[], centralConcepts: string[], engagements: string[]): string {
+  const primaryConcept = centralConcepts[0] || themes[0] || 'fundamental philosophical questions'
+  const metaInsight = getMetaInsight(themes, thesis)
+  const themeList = themes.length > 1 ? themes.slice(0, 2).join(' and ') : themes[0] || 'philosophical inquiry'
+
+  return `The conversation between ${fighter1.name} and ${fighter2.name} about "${thesis}" opened up questions that transcend their initial disagreement, revealing deeper structures of thought and inquiry. What began as a focused debate evolved into an exploration of ${primaryConcept}, uncovering layers of complexity that neither anticipated.
+
+The deeper framework that emerged from their exchange suggests that the original thesis was actually a gateway to more fundamental questions about ${themeList}. Their dialogue revealed that the real issue isn't simply choosing between their positions, but understanding how different philosophical approaches can illuminate distinct dimensions of complex human problems.
+
+This conversation points toward a more sophisticated understanding of ${metaInsight}—one that recognizes both the necessity of intellectual disagreement and the provisional nature of any single perspective. The transcendent insight is that philosophical progress often happens not through resolution, but through the cultivation of productive tension between competing insights.`
+}
+
+function generateParadoxContent(fighter1: Fighter, fighter2: Fighter, thesis: string, themes: string[], totalExchanges: number): string {
+  const exchangeIntensity = totalExchanges > 6 ? 'sustained and intensive' : totalExchanges > 4 ? 'thorough' : 'focused'
+
+  return `One of the most striking aspects of this ${exchangeIntensity} exchange is how ${fighter1.name} and ${fighter2.name} needed their disagreement to discover what they actually shared. Their initial positions appeared fundamentally incompatible, yet the very process of defending these positions against each other's challenges revealed unexpected common ground.
+
+${fighter1.name}'s vigorous arguments didn't just oppose ${fighter2.name}'s position—they forced ${fighter2.name} to articulate nuances and depths that might never have emerged otherwise. Similarly, ${fighter2.name}'s challenges pushed ${fighter1.name} to confront limitations and blind spots that strengthened rather than weakened their core insights. This created a philosophical paradox: the more authentically they disagreed, the more they contributed to a shared understanding that belonged fully to neither.
+
+This illustrates something profound about philosophical dialogue—that genuine opposition can be the highest form of collaboration. The creative tension between their positions generated insights that neither could have reached in isolation, demonstrating how intellectual conflict, when pursued with rigor and good faith, becomes a form of joint inquiry into truth.`
 }
 
 function getApproachFromContent(content: string, fighter: Fighter): string {
@@ -483,6 +577,57 @@ function analyzeConversationForSynthesis(conversationHistory: string[], fighter1
   }
 }
 
+function extractKeyTermsFromConversation(fullText: string): string[] {
+  const keyTerms: string[] = []
+
+  // Extract important philosophical terms and concepts
+  const importantTerms = [
+    'justice', 'truth', 'freedom', 'power', 'knowledge', 'reality', 'existence',
+    'meaning', 'purpose', 'ethics', 'morality', 'reason', 'experience',
+    'consciousness', 'society', 'individual', 'nature', 'culture', 'progress',
+    'tradition', 'revolution', 'reform', 'virtue', 'duty', 'rights'
+  ]
+
+  importantTerms.forEach(term => {
+    if (fullText.includes(term)) {
+      keyTerms.push(term)
+    }
+  })
+
+  return keyTerms.slice(0, 3) // Return top 3 key terms
+}
+
+function extractCentralConcepts(conversationHistory: string[], themes: string[]): string[] {
+  const concepts: string[] = []
+
+  // Extract concepts based on conversation themes and content
+  const fullText = conversationHistory.join(' ').toLowerCase()
+
+  if (themes.includes('ethics')) {
+    if (fullText.includes('good') || fullText.includes('right')) concepts.push('moral goodness')
+    if (fullText.includes('duty') || fullText.includes('obligation')) concepts.push('moral duty')
+  }
+
+  if (themes.includes('political-philosophy')) {
+    if (fullText.includes('state') || fullText.includes('government')) concepts.push('political authority')
+    if (fullText.includes('citizen') || fullText.includes('society')) concepts.push('social contract')
+  }
+
+  if (themes.includes('epistemology')) {
+    if (fullText.includes('certainty') || fullText.includes('doubt')) concepts.push('the nature of certainty')
+    if (fullText.includes('belief') || fullText.includes('faith')) concepts.push('belief and knowledge')
+  }
+
+  // Fallback to more general concepts
+  if (concepts.length === 0) {
+    if (fullText.includes('human')) concepts.push('human nature')
+    if (fullText.includes('world') || fullText.includes('reality')) concepts.push('the nature of reality')
+    if (fullText.includes('life') || fullText.includes('living')) concepts.push('the meaning of life')
+  }
+
+  return concepts.length > 0 ? concepts : ['fundamental philosophical questions']
+}
+
 function extractConversationThemes(conversationHistory: string[]): string[] {
   const fullText = conversationHistory.join(' ').toLowerCase()
   const themes: string[] = []
@@ -546,24 +691,56 @@ Requirements:
 - Make the insights specific to THIS exchange, not general philosophy
 - Return ONLY the JSON object with no additional text`
 
+  // Helper function for robust API calls with retries
+  const callGeminiWithRetry = async (model: any, prompt: string, maxRetries = 3): Promise<string> => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 Gemini API attempt ${attempt}/${maxRetries}`)
+
+        // Add timeout to the API call
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Request timeout')), 45000) // 45 second timeout
+        })
+
+        const apiCall = model.generateContent(prompt)
+        const result = await Promise.race([apiCall, timeoutPromise])
+
+        const text = result.response.text()
+        console.log(`✅ Gemini API success on attempt ${attempt}, response length: ${text.length}`)
+        return text
+
+      } catch (error: any) {
+        console.log(`❌ Gemini API attempt ${attempt} failed:`, error.message)
+
+        if (attempt === maxRetries) {
+          throw error
+        }
+
+        // Exponential backoff: wait 2^attempt seconds
+        const delay = Math.pow(2, attempt) * 1000
+        console.log(`⏳ Waiting ${delay}ms before retry...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+    throw new Error('All retry attempts failed')
+  }
+
   // Try multiple approaches to get high-quality syntheses
   const strategies = [
-    // Strategy 1: Direct JSON request
+    // Strategy 1: Direct JSON request with retries
     async () => {
       const model = getSynthesisModel()
-      const result = await model.generateContent(prompt)
-      return result.response.text()
+      return await callGeminiWithRetry(model, prompt, 3)
     },
 
-    // Strategy 2: Simpler prompt if the first fails
+    // Strategy 2: Simpler prompt with retries
     async () => {
       const model = getSynthesisModel()
       const simplePrompt = `Analyze the debate between ${fighter1.name} and ${fighter2.name} about "${thesis}". Return JSON with 3 syntheses: resolution, transcendence, paradox. Each needs title, type, content (200+ words), concept_tags array.`
-      const result = await model.generateContent(simplePrompt)
-      return result.response.text()
+      return await callGeminiWithRetry(model, simplePrompt, 2)
     },
 
-    // Strategy 3: Very explicit JSON request
+    // Strategy 3: Very explicit JSON request with retries
     async () => {
       const model = getSynthesisModel()
       const explicitPrompt = `Generate a JSON response about the debate between ${fighter1.name} and ${fighter2.name}.
@@ -578,8 +755,7 @@ Format:
     {"title": "Title 3", "type": "paradox", "content": "Content 3", "concept_tags": ["tag5", "tag6"]}
   ]
 }`
-      const result = await model.generateContent(explicitPrompt)
-      return result.response.text()
+      return await callGeminiWithRetry(model, explicitPrompt, 2)
     },
 
     // Strategy 4: Give up on JSON and construct it programmatically
@@ -654,6 +830,47 @@ Each analysis should be 200-300 words and reference specific things they said.`
       }
 
       throw new Error(`Could not parse text response into sections (found ${sections.length})`)
+    },
+
+    // Strategy 5: Single synthesis approach when all else fails
+    async () => {
+      const model = getSynthesisModel()
+      const singlePrompt = `Analyze the philosophical debate between ${fighter1.name} and ${fighter2.name} about "${thesis}".
+
+Write one insightful analysis (200+ words) of how their conversation reveals something important about philosophical dialogue and truth-seeking.
+
+Focus on what actually happened in their exchange, not general philosophy.`
+
+      const result = await callGeminiWithRetry(model, singlePrompt, 1)
+      const content = result.trim()
+
+      if (content.length > 100) {
+        // Create a single synthesis and replicate it with variations
+        return JSON.stringify({
+          syntheses: [
+            {
+              title: `${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()}: Finding common ground through disagreement`,
+              type: "resolution",
+              content: content,
+              concept_tags: ["philosophical-dialogue", "complementary-perspectives"]
+            },
+            {
+              title: `Beyond the debate: What their exchange revealed`,
+              type: "transcendence",
+              content: `Building on their discussion of "${thesis}", this conversation revealed deeper questions about the nature of philosophical inquiry itself. ` + content.substring(0, Math.min(content.length, 250)),
+              concept_tags: ["meta-philosophy", "transcendent-insights"]
+            },
+            {
+              title: `The productive tension in their philosophical disagreement`,
+              type: "paradox",
+              content: `What makes this exchange particularly interesting is how their disagreement became collaborative. ` + content.substring(0, Math.min(content.length, 250)),
+              concept_tags: ["productive-conflict", "dialectical-method"]
+            }
+          ]
+        })
+      }
+
+      throw new Error('Strategy 5 failed to generate sufficient content')
     }
   ]
 
