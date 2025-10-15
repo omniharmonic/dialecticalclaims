@@ -29,7 +29,7 @@ function fixCommonJsonErrors(jsonStr: string): string {
 function repairJsonStructure(jsonStr: string): string {
   let repaired = jsonStr
 
-  console.log('🔧 Attempting JSON repair on:', repaired.substring(0, 200) + '...')
+  // console.log('🔧 Attempting JSON repair on:', repaired.substring(0, 200) + '...')
 
   // Handle truncated JSON - if it ends abruptly, try to close it properly
   if (repaired.endsWith('...')) {
@@ -67,7 +67,7 @@ function repairJsonStructure(jsonStr: string): string {
   const openBrackets = (repaired.match(/\[/g) || []).length
   let closeBrackets = (repaired.match(/]/g) || []).length
 
-  console.log(`🔧 Brace/bracket count: open braces=${openBraces}, close braces=${closeBraces}, open brackets=${openBrackets}, close brackets=${closeBrackets}`)
+  // console.log(`🔧 Brace/bracket count: open braces=${openBraces}, close braces=${closeBraces}, open brackets=${openBrackets}, close brackets=${closeBrackets}`)
 
   // Add missing closing braces for objects
   while (closeBraces < openBraces) {
@@ -84,7 +84,7 @@ function repairJsonStructure(jsonStr: string): string {
   // Fix incomplete strings by closing them
   const unclosedStrings = repaired.match(/"[^"]*$/g)
   if (unclosedStrings) {
-    console.log('🔧 Found unclosed string, adding closing quote')
+    // console.log('🔧 Found unclosed string, adding closing quote')
     repaired += '"'
   }
 
@@ -105,7 +105,7 @@ function repairJsonStructure(jsonStr: string): string {
 
   // Last resort: if we have synthesis data but malformed structure, try to extract and reconstruct
   if (repaired.includes('"title"') && repaired.includes('"content"') && !repaired.includes('"syntheses"')) {
-    console.log('🔧 Attempting structural reconstruction')
+    // console.log('🔧 Attempting structural reconstruction')
 
     // Try to find synthesis objects and wrap them properly
     const titleMatches = repaired.match(/"title":\s*"[^"]+"/g) || []
@@ -123,7 +123,7 @@ function repairJsonStructure(jsonStr: string): string {
     }
   }
 
-  console.log('🔧 JSON repair complete, result length:', repaired.length)
+  // console.log('🔧 JSON repair complete, result length:', repaired.length)
   return repaired
 }
 
@@ -134,7 +134,7 @@ function generateAnalyticalFallbackSyntheses(
   fighter1: Fighter,
   fighter2: Fighter
 ): any[] {
-  console.log('🔄 Generating enhanced analytical fallback syntheses')
+  // console.log('🔄 Generating enhanced analytical fallback syntheses')
 
   const analysis = analyzeConversationForSynthesis(conversationHistory, fighter1, fighter2)
 
@@ -695,7 +695,7 @@ Requirements:
   const callGeminiWithRetry = async (model: any, prompt: string, maxRetries = 3): Promise<string> => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`🔄 Gemini API attempt ${attempt}/${maxRetries}`)
+        // console.log(`🔄 Gemini API attempt ${attempt}/${maxRetries}`)
 
         // Add timeout to the API call
         const timeoutPromise = new Promise<never>((_, reject) => {
@@ -706,11 +706,11 @@ Requirements:
         const result = await Promise.race([apiCall, timeoutPromise])
 
         const text = result.response.text()
-        console.log(`✅ Gemini API success on attempt ${attempt}, response length: ${text.length}`)
+        // console.log(`✅ Gemini API success on attempt ${attempt}, response length: ${text.length}`)
         return text
 
       } catch (error: any) {
-        console.log(`❌ Gemini API attempt ${attempt} failed:`, error.message)
+        // console.log(`❌ Gemini API attempt ${attempt} failed:`, error.message)
 
         if (attempt === maxRetries) {
           throw error
@@ -718,7 +718,7 @@ Requirements:
 
         // Exponential backoff: wait 2^attempt seconds
         const delay = Math.pow(2, attempt) * 1000
-        console.log(`⏳ Waiting ${delay}ms before retry...`)
+        // console.log(`⏳ Waiting ${delay}ms before retry...`)
         await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
@@ -774,7 +774,7 @@ Each analysis should be 200-300 words and reference specific things they said.`
       const result = await model.generateContent(textPrompt)
       const text = result.response.text()
 
-      console.log('Strategy 4 text response:', text.substring(0, 300))
+      // console.log('Strategy 4 text response:', text.substring(0, 300))
 
       // Parse the text response and construct JSON manually
       // Try multiple parsing approaches
@@ -802,7 +802,7 @@ Each analysis should be 200-300 words and reference specific things they said.`
         }
       }
 
-      console.log(`Strategy 4 found ${sections.length} sections`)
+      // console.log(`Strategy 4 found ${sections.length} sections`)
 
       if (sections.length >= 3) {
         return JSON.stringify({
@@ -876,11 +876,11 @@ Focus on what actually happened in their exchange, not general philosophy.`
 
   for (let i = 0; i < strategies.length; i++) {
     try {
-      console.log(`🎯 Attempting synthesis generation strategy ${i + 1}`)
+      // console.log(`🎯 Attempting synthesis generation strategy ${i + 1}`)
       const response = await strategies[i]()
 
-      console.log('Raw synthesis response:', response.substring(0, 500) + (response.length > 500 ? '...' : ''))
-      console.log('Full response length:', response.length)
+      // console.log('Raw synthesis response:', response.substring(0, 500) + (response.length > 500 ? '...' : ''))
+      // console.log('Full response length:', response.length)
 
       // Clean and parse JSON response
       let cleaned = response.trim()
@@ -894,7 +894,7 @@ Focus on what actually happened in their exchange, not general philosophy.`
       let jsonFound = false;
 
       // Approach 1: Look for complete JSON object
-      let jsonMatch = cleaned.match(/{[\s\S]*}/);
+      const jsonMatch = cleaned.match(/{[\s\S]*}/);
       if (jsonMatch) {
         cleaned = jsonMatch[0];
         jsonFound = true;
@@ -918,8 +918,8 @@ Focus on what actually happened in their exchange, not general philosophy.`
       }
 
       if (!jsonFound) {
-        console.log(`❌ Strategy ${i + 1}: No JSON pattern found in response`);
-        console.log('Cleaned response:', cleaned.substring(0, 200));
+        // console.log(`❌ Strategy ${i + 1}: No JSON pattern found in response`);
+        // console.log('Cleaned response:', cleaned.substring(0, 200));
         continue; // Try next strategy
       }
 
@@ -930,21 +930,21 @@ Focus on what actually happened in their exchange, not general philosophy.`
       try {
         parsed = JSON.parse(cleaned)
       } catch (parseError) {
-        console.log(`JSON parse error in strategy ${i + 1}:`, parseError, 'Cleaned text length:', cleaned.length)
+        // console.log(`JSON parse error in strategy ${i + 1}:`, parseError, 'Cleaned text length:', cleaned.length)
 
         // Try aggressive repair for truncated JSON
         try {
           cleaned = repairJsonStructure(cleaned)
           parsed = JSON.parse(cleaned)
         } catch (repairError) {
-          console.log(`❌ Strategy ${i + 1}: Standard JSON repair failed, trying truncation recovery`)
+          // console.log(`❌ Strategy ${i + 1}: Standard JSON repair failed, trying truncation recovery`)
 
           // If it's likely a truncation issue, try to salvage what we can
           try {
             // Look for complete synthesis objects and extract them
             const synthesesMatch = cleaned.match(/"syntheses":\s*\[([\s\S]*)/)
             if (synthesesMatch) {
-              let synthesesContent = synthesesMatch[1]
+              const synthesesContent = synthesesMatch[1]
 
               // Find complete synthesis objects (those ending with })
               const objects = []
@@ -987,7 +987,7 @@ Focus on what actually happened in their exchange, not general philosophy.`
               if (objects.length > 0) {
                 const validJson = `{"syntheses": [${objects.join(', ')}]}`
                 parsed = JSON.parse(validJson)
-                console.log(`✅ Strategy ${i + 1}: Recovered ${objects.length} syntheses from truncated JSON`)
+                // console.log(`✅ Strategy ${i + 1}: Recovered ${objects.length} syntheses from truncated JSON`)
               } else {
                 throw new Error('No complete synthesis objects found')
               }
@@ -995,7 +995,7 @@ Focus on what actually happened in their exchange, not general philosophy.`
               throw new Error('No syntheses array found in truncated JSON')
             }
           } catch (truncationError) {
-            console.log(`❌ Strategy ${i + 1}: Truncation recovery failed`)
+            // console.log(`❌ Strategy ${i + 1}: Truncation recovery failed`)
             continue; // Try next strategy
           }
         }
@@ -1013,19 +1013,19 @@ Focus on what actually happened in their exchange, not general philosophy.`
             !s.title.includes('example') &&
             ['resolution', 'transcendence', 'paradox'].includes(s.type)
           )) {
-        console.log(`✅ Strategy ${i + 1}: High-quality syntheses generated successfully`)
+        // console.log(`✅ Strategy ${i + 1}: High-quality syntheses generated successfully`)
         return syntheses
       }
 
-      console.log(`⚠️ Strategy ${i + 1}: Generated syntheses failed quality check`)
+      // console.log(`⚠️ Strategy ${i + 1}: Generated syntheses failed quality check`)
 
     } catch (error) {
-      console.log(`❌ Strategy ${i + 1} failed:`, error)
+      // console.log(`❌ Strategy ${i + 1} failed:`, error)
       continue; // Try next strategy
     }
   }
 
   // All strategies failed, use enhanced analytical fallback
-  console.log('🔄 All synthesis generation strategies failed, using enhanced analytical fallback')
+  // console.log('🔄 All synthesis generation strategies failed, using enhanced analytical fallback')
   return generateAnalyticalFallbackSyntheses(conversationHistory, thesis, fighter1, fighter2)
 }
