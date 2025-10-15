@@ -63,6 +63,10 @@ const FIGHTER_IMAGE_MAP: Record<string, string> = {
   'Jordan Peterson': 'Jordan Peterson.png',
   'Bill Nye': 'Bill Nye.png',
   'Judith Butler': 'Judith Butler.png',
+
+  // Religious & Historical Figures
+  'Jesus of Nazareth': 'Jesus of Nazareth.png',
+  'Benjamin Franklin': 'Benjamin Franklin.png',
 }
 
 /**
