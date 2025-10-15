@@ -29,6 +29,16 @@ function fixCommonJsonErrors(jsonStr: string): string {
 function repairJsonStructure(jsonStr: string): string {
   let repaired = jsonStr
 
+  // Handle truncated JSON - if it ends abruptly, try to close it properly
+  if (repaired.endsWith('...')) {
+    repaired = repaired.slice(0, -3)
+  }
+
+  // If the content ends mid-string, close the string and structure
+  if (repaired.match(/"content":\s*"[^"]*$/)) {
+    repaired += '"'
+  }
+
   // Ensure the structure is complete
   if (!repaired.includes('"syntheses"')) {
     // If no syntheses array found, wrap content in proper structure
@@ -41,17 +51,26 @@ function repairJsonStructure(jsonStr: string): string {
   const openBrackets = (repaired.match(/\[/g) || []).length
   let closeBrackets = (repaired.match(/]/g) || []).length
 
-  // Add missing closing braces
+  // Add missing closing braces for objects
   while (closeBraces < openBraces) {
     repaired += '}'
     closeBraces++
   }
 
-  // Add missing closing brackets
+  // Add missing closing brackets for arrays
   while (closeBrackets < openBrackets) {
     repaired += ']'
     closeBrackets++
   }
+
+  // Fix incomplete strings by closing them
+  const unclosedStrings = repaired.match(/"[^"]*$/g)
+  if (unclosedStrings) {
+    repaired += '"'
+  }
+
+  // Add missing commas between objects in arrays
+  repaired = repaired.replace(/}\s*{/g, '}, {')
 
   // Fix content strings that may contain problematic characters
   repaired = repaired.replace(/"content":\s*"([^"]*(?:"[^"]*)*)"/, (match, content) => {
@@ -70,126 +89,88 @@ function generateAnalyticalFallbackSyntheses(
   fighter1: Fighter,
   fighter2: Fighter
 ): any[] {
-  // Extract key themes and arguments from the actual conversation
-  const fullText = conversationHistory.join(' ').toLowerCase()
+  const analysis = analyzeConversationForSynthesis(conversationHistory, fighter1, fighter2)
 
-  // Identify key philosophical concepts mentioned
-  const concepts = extractKeyConcepts(fullText)
+  // Extract actual content from the conversation
+  const fighter1Content = analysis.fighter1Quotes.join(' ')
+  const fighter2Content = analysis.fighter2Quotes.join(' ')
+  const themes = analysis.conversationThemes
 
-  // Analyze the tension points in the dialogue
-  const tensions = analyzeConversationTensions(conversationHistory, fighter1, fighter2)
-
-  // Get actual quotes or paraphrases from the conversation
-  const keyExchanges = getKeyExchanges(conversationHistory, fighter1, fighter2)
+  // Generate insights based on actual conversation content
+  const resolutionTitle = `${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()}: Complementary insights on ${themes[0] || 'philosophical truth'}`
+  const transcendenceTitle = `Beyond the debate: What ${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()} revealed together`
+  const paradoxTitle = `The productive tension between ${fighter1.name.split(' ').pop()}'s and ${fighter2.name.split(' ').pop()}'s approaches`
 
   return [
     {
-      title: `${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()}: ${concepts.primary} meets ${concepts.secondary}`,
+      title: resolutionTitle,
       type: 'resolution',
-      content: `This exchange revealed something important about how ${concepts.primary} and ${concepts.secondary} can work together. ${fighter1.name} ${keyExchanges.fighter1Approach}, while ${fighter2.name} ${keyExchanges.fighter2Approach}.\n\n${tensions.mainTension} But what emerged from their disagreement was actually more interesting than either position alone. ${keyExchanges.synthesis}\n\nThe real insight here is that ${concepts.integration}. This isn't just about finding a middle ground - it's about recognizing that both thinkers were responding to different aspects of the same underlying challenge. ${tensions.resolution}`,
-      concept_tags: [concepts.primary, concepts.secondary, concepts.integration, 'dialectical-synthesis', 'complementary-perspectives'],
+      content: `In their exchange about "${thesis}", ${fighter1.name} and ${fighter2.name} approached the question from notably different angles. ${fighter1.name} emphasized ${getApproachFromContent(fighter1Content, fighter1)}, while ${fighter2.name} focused on ${getApproachFromContent(fighter2Content, fighter2)}.\n\nWhat became clear through their dialogue is that these approaches actually complement each other rather than conflict. ${fighter1.name}'s perspective provides ${getStrengthFromContent(fighter1Content)}, while ${fighter2.name}'s viewpoint offers ${getStrengthFromContent(fighter2Content)}.\n\nThe synthesis that emerges is richer than either position alone: ${generateInsightFromThemes(themes, thesis)}. This shows how philosophical truth often requires multiple perspectives working in tension with each other.`,
+      concept_tags: themes.concat(['complementary-perspectives', 'dialectical-synthesis', 'philosophical-dialogue']),
     },
     {
-      title: `The deeper framework behind ${fighter1.name.split(' ').pop()} vs ${fighter2.name.split(' ').pop()}`,
+      title: transcendenceTitle,
       type: 'transcendence',
-      content: `Looking at this whole exchange about "${thesis}", I think we can see a bigger pattern at work. The conflict between ${fighter1.name} and ${fighter2.name} isn't just about this specific question - it points to a fundamental tension in how we approach ${concepts.domain}.\n\n${tensions.transcendentFramework} This suggests we need a new way of thinking that can hold both perspectives simultaneously. ${keyExchanges.transcendentInsight}\n\nWhat this conversation really illuminates is ${concepts.biggerPicture}. The disagreement itself becomes productive when we see it as part of a larger philosophical project of ${concepts.overarchingGoal}.`,
-      concept_tags: [concepts.domain, 'meta-philosophy', 'framework-thinking', concepts.overarchingGoal, 'dialectical-transcendence'],
+      content: `The conversation between ${fighter1.name} and ${fighter2.name} about "${thesis}" opened up questions that go beyond their initial disagreement. What started as a debate about specific philosophical positions evolved into an exploration of ${themes[0] || 'fundamental philosophical questions'}.\n\nThe deeper framework that emerged from their exchange suggests that the original thesis needs to be understood within a broader context of ${themes.join(' and ')}. Their dialogue revealed that the question isn't just about choosing between their positions, but about understanding how different philosophical approaches can illuminate different aspects of complex problems.\n\nThis conversation points toward a more sophisticated understanding of ${getMetaInsight(themes, thesis)}, one that recognizes the value of intellectual tension and the limitations of any single perspective.`,
+      concept_tags: themes.concat(['meta-philosophy', 'framework-thinking', 'transcendent-understanding']),
     },
     {
-      title: `Why ${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()} had to disagree`,
+      title: paradoxTitle,
       type: 'paradox',
-      content: `The fascinating thing about this debate is that ${fighter1.name} and ${fighter2.name} couldn't have reached their insights without disagreeing with each other. ${tensions.productiveTension}\n\n${keyExchanges.paradoxicalElement} This creates a productive paradox: the very disagreement that seemed to separate them actually revealed what they had in common.\n\nThere's something important here about how philosophical thinking works. Sometimes the most valuable insights emerge not from resolving conflicts but from understanding why certain conflicts are necessary and generative. ${concepts.paradoxInsight}`,
-      concept_tags: [concepts.primary, concepts.secondary, 'productive-conflict', 'philosophical-method', 'necessary-tension'],
+      content: `One of the most interesting aspects of this exchange is how ${fighter1.name} and ${fighter2.name} needed their disagreement to discover what they actually had in common. Their initial positions seemed incompatible, but the process of engaging with each other revealed deeper shared concerns.\n\n${fighter1.name}'s arguments pushed ${fighter2.name} to clarify and strengthen their position, while ${fighter2.name}'s challenges forced ${fighter1.name} to address blind spots in their reasoning. This created a productive paradox: the more vigorously they disagreed, the more they contributed to a shared understanding.\n\nThis illustrates something important about philosophical dialogue - that genuine disagreement can be more valuable than superficial agreement. The tension between their positions generated insights that neither could have reached alone, showing how conflict can be a form of collaboration.`,
+      concept_tags: themes.concat(['productive-conflict', 'philosophical-method', 'necessary-tension', 'collaborative-disagreement']),
     }
   ]
 }
 
-function extractKeyConcepts(fullText: string): any {
-  // Analyze the text for philosophical themes
-  const concepts = {
-    primary: 'thinking',
-    secondary: 'action',
-    integration: 'integrated practice',
-    domain: 'philosophy',
-    biggerPicture: 'how different approaches to truth can complement each other',
-    overarchingGoal: 'understanding',
-    paradoxInsight: 'The tension itself teaches us something we couldn\'t learn from agreement alone.'
+function getApproachFromContent(content: string, fighter: Fighter): string {
+  // Analyze the actual content to determine the fighter's approach
+  if (content.toLowerCase().includes('reason') || content.toLowerCase().includes('logic')) {
+    return 'rational analysis and systematic reasoning'
   }
-
-  // Update based on actual content
-  if (fullText.includes('justice') || fullText.includes('moral')) {
-    concepts.primary = 'moral reasoning'
-    concepts.secondary = 'practical justice'
-    concepts.domain = 'ethics'
-    concepts.integration = 'ethical praxis'
+  if (content.toLowerCase().includes('experience') || content.toLowerCase().includes('practice')) {
+    return 'experiential knowledge and practical wisdom'
   }
-
-  if (fullText.includes('power') || fullText.includes('social')) {
-    concepts.primary = 'social analysis'
-    concepts.secondary = 'political action'
-    concepts.domain = 'political philosophy'
-    concepts.integration = 'critical praxis'
+  if (content.toLowerCase().includes('power') || content.toLowerCase().includes('social')) {
+    return 'social analysis and power dynamics'
   }
-
-  if (fullText.includes('knowledge') || fullText.includes('truth')) {
-    concepts.primary = 'epistemology'
-    concepts.secondary = 'lived experience'
-    concepts.domain = 'knowledge'
-    concepts.integration = 'embodied knowing'
+  if (content.toLowerCase().includes('individual') || content.toLowerCase().includes('freedom')) {
+    return 'individual autonomy and personal freedom'
   }
-
-  if (fullText.includes('freedom') || fullText.includes('liberty')) {
-    concepts.primary = 'individual freedom'
-    concepts.secondary = 'collective responsibility'
-    concepts.domain = 'political theory'
-    concepts.integration = 'social freedom'
-  }
-
-  return concepts
+  return `${fighter.name.split(' ').pop()}'s distinctive philosophical methodology`
 }
 
-function analyzeConversationTensions(conversationHistory: string[], fighter1: Fighter, fighter2: Fighter): any {
-  const hasDisagreement = conversationHistory.some(exchange =>
-    exchange.toLowerCase().includes('disagree') ||
-    exchange.toLowerCase().includes('wrong') ||
-    exchange.toLowerCase().includes('but ') ||
-    exchange.toLowerCase().includes('however')
-  )
-
-  return {
-    mainTension: hasDisagreement
-      ? `At first glance, ${fighter1.name} and ${fighter2.name} seemed to be talking past each other.`
-      : `While ${fighter1.name} and ${fighter2.name} approached this differently, they were wrestling with the same fundamental question.`,
-
-    resolution: `What we're seeing is that both perspectives are necessary for a complete understanding.`,
-
-    transcendentFramework: `On one level, this looks like a straightforward disagreement. But step back and you can see something more interesting happening.`,
-
-    productiveTension: `This wasn't just a misunderstanding or talking past each other - there was something in the structure of the problem itself that demanded different approaches.`
+function getStrengthFromContent(content: string): string {
+  if (content.toLowerCase().includes('system') || content.toLowerCase().includes('structure')) {
+    return 'systematic analysis and structural understanding'
   }
+  if (content.toLowerCase().includes('concrete') || content.toLowerCase().includes('real')) {
+    return 'grounding in concrete reality and practical concerns'
+  }
+  if (content.toLowerCase().includes('critical') || content.toLowerCase().includes('question')) {
+    return 'critical questioning and intellectual rigor'
+  }
+  return 'important philosophical insights and methodological clarity'
 }
 
-function getKeyExchanges(conversationHistory: string[], fighter1: Fighter, fighter2: Fighter): any {
-  // Extract actual conversation patterns
-  const fighter1Exchanges = conversationHistory.filter(exchange => exchange.startsWith(fighter1.name))
-  const fighter2Exchanges = conversationHistory.filter(exchange => exchange.startsWith(fighter2.name))
-
-  return {
-    fighter1Approach: fighter1Exchanges.length > 0
-      ? 'approached this systematically, building a careful argument'
-      : 'brought their distinctive philosophical perspective to bear',
-
-    fighter2Approach: fighter2Exchanges.length > 0
-      ? 'responded with equal intellectual rigor but from a different starting point'
-      : 'offered a compelling alternative framework',
-
-    synthesis: 'The real breakthrough came when we realized both were addressing different aspects of the same underlying challenge.',
-
-    transcendentInsight: 'This points toward a more sophisticated way of thinking about these kinds of philosophical problems.',
-
-    paradoxicalElement: 'The harder they pushed against each other, the clearer it became that they were actually working on the same project from different angles.'
-  }
+function generateInsightFromThemes(themes: string[], thesis: string): string {
+  const primaryTheme = themes[0] || 'philosophical inquiry'
+  return `we need approaches that can integrate different ways of understanding ${primaryTheme} while remaining sensitive to the complexity of questions like "${thesis}"`
 }
+
+function getMetaInsight(themes: string[], thesis: string): string {
+  if (themes.includes('ethics')) {
+    return 'moral reasoning and ethical decision-making'
+  }
+  if (themes.includes('political-philosophy')) {
+    return 'political life and social organization'
+  }
+  if (themes.includes('epistemology')) {
+    return 'knowledge and truth'
+  }
+  return 'philosophical understanding more generally'
+}
+
 
 interface GenerateDialecticOptions {
   fighter1: Fighter
@@ -470,123 +451,364 @@ interface GenerateSynthesesOptions {
   conversationHistory: string[]
 }
 
+function analyzeConversationForSynthesis(conversationHistory: string[], fighter1: Fighter, fighter2: Fighter) {
+  // Extract key quotes and arguments from each fighter
+  const fighter1Exchanges = conversationHistory.filter(exchange => exchange.startsWith(fighter1.name))
+  const fighter2Exchanges = conversationHistory.filter(exchange => exchange.startsWith(fighter2.name))
+
+  // Get substantive quotes (not just the name prefix)
+  const fighter1Quotes = fighter1Exchanges.map(exchange =>
+    exchange.replace(`${fighter1.name}: `, '').substring(0, 200) + '...'
+  ).filter(quote => quote.length > 50)
+
+  const fighter2Quotes = fighter2Exchanges.map(exchange =>
+    exchange.replace(`${fighter2.name}: `, '').substring(0, 200) + '...'
+  ).filter(quote => quote.length > 50)
+
+  // Find moments of direct engagement
+  const engagements = conversationHistory.filter(exchange =>
+    exchange.toLowerCase().includes('disagree') ||
+    exchange.toLowerCase().includes('however') ||
+    exchange.toLowerCase().includes('but ') ||
+    exchange.toLowerCase().includes('response') ||
+    exchange.toLowerCase().includes('challenge')
+  )
+
+  return {
+    fighter1Quotes: fighter1Quotes.slice(0, 3), // Top 3 substantive quotes
+    fighter2Quotes: fighter2Quotes.slice(0, 3),
+    engagements: engagements.slice(0, 3),
+    totalExchanges: conversationHistory.length,
+    conversationThemes: extractConversationThemes(conversationHistory)
+  }
+}
+
+function extractConversationThemes(conversationHistory: string[]): string[] {
+  const fullText = conversationHistory.join(' ').toLowerCase()
+  const themes: string[] = []
+
+  // Philosophy themes
+  if (fullText.includes('truth') || fullText.includes('knowledge')) themes.push('epistemology')
+  if (fullText.includes('justice') || fullText.includes('moral') || fullText.includes('ethical')) themes.push('ethics')
+  if (fullText.includes('freedom') || fullText.includes('liberty')) themes.push('political-philosophy')
+  if (fullText.includes('reality') || fullText.includes('being') || fullText.includes('existence')) themes.push('metaphysics')
+  if (fullText.includes('reason') || fullText.includes('logic')) themes.push('rationality')
+  if (fullText.includes('experience') || fullText.includes('empirical')) themes.push('empiricism')
+  if (fullText.includes('power') || fullText.includes('authority')) themes.push('power-dynamics')
+  if (fullText.includes('meaning') || fullText.includes('purpose')) themes.push('existentialism')
+
+  return themes.length > 0 ? themes : ['philosophical-inquiry']
+}
+
 async function generateSyntheses(options: GenerateSynthesesOptions): Promise<any[]> {
   const { thesis, fighter1, fighter2, conversationHistory } = options
 
-  const prompt = `I just watched a fascinating debate between ${fighter1.name} and ${fighter2.name} about "${thesis}". Here's what they said:
+  // Extract actual quotes and key moments from the conversation
+  const conversationAnalysis = analyzeConversationForSynthesis(conversationHistory, fighter1, fighter2)
 
+  const prompt = `You are analyzing a philosophical debate between ${fighter1.name} and ${fighter2.name} about the thesis: "${thesis}"
+
+CONVERSATION TRANSCRIPT:
 ${conversationHistory.join('\n\n')}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Your task: Generate exactly 3 syntheses analyzing their actual exchange. Each synthesis must reference specific arguments they made.
 
-ANALYSIS TASK: Generate 3 specific syntheses that reference actual arguments from this conversation.
+CRITICAL: You must respond with ONLY a JSON object. No explanatory text before or after. No markdown formatting. Just pure JSON.
 
-CRITICAL: You must quote or paraphrase specific things these thinkers actually said. Don't give me generic philosophy - I want insights that could ONLY come from analyzing THIS specific exchange.
-
-For each synthesis:
-1. QUOTE or reference specific arguments made in the conversation above
-2. Point to particular moments where the thinkers engaged with each other
-3. Identify what concepts/ideas they actually discussed (not abstract categories)
-4. Show how their real positions create genuine intellectual tension
-
-Three required synthesis types:
-
-TYPE 1 (resolution): How their specific arguments complement each other
-- What did ${fighter1.name} argue that was valuable?
-- What did ${fighter2.name} argue that was valuable?
-- How do these SPECIFIC positions work together?
-
-TYPE 2 (transcendence): What bigger framework emerges from their actual exchange
-- What deeper question did their conversation reveal?
-- How does their specific disagreement point to something larger?
-
-TYPE 3 (paradox): Why their particular disagreement is philosophically productive
-- What made their specific conflict necessary and valuable?
-- How did pushing against each other reveal something neither could see alone?
-
-Write like a thoughtful person explaining genuine insights, not academic abstractions. Reference the actual conversation extensively.
-
-Format as valid JSON:
-
+Required JSON format:
 {
   "syntheses": [
     {
-      "title": "A specific insight about what these thinkers revealed together",
+      "title": "Title describing how their specific approaches complement each other",
       "type": "resolution",
-      "content": "When ${fighter1.name} argued [specific quote or paraphrase], they revealed [specific insight]. ${fighter2.name} responded by [specific quote or paraphrase], which showed [different specific insight].\n\nWhat's fascinating is how these positions actually work together: [explain the specific complementarity based on their actual arguments].\n\nThis synthesis gives us [specific new understanding that emerges from THEIR conversation, not general philosophy].",
-      "concept_tags": ["specific-concepts", "from-actual", "conversation", "not-generic", "tags"]
+      "content": "Analysis of how their actual arguments work together, referencing specific points they made",
+      "concept_tags": ["philosophical-concepts", "from-actual-conversation"]
+    },
+    {
+      "title": "Title about the deeper framework that emerged from their exchange",
+      "type": "transcendence",
+      "content": "What larger insights emerged from their specific disagreement",
+      "concept_tags": ["meta-concepts", "transcendent-insights"]
+    },
+    {
+      "title": "Title explaining why their particular disagreement was philosophically valuable",
+      "type": "paradox",
+      "content": "How their specific conflict generated insights neither could reach alone",
+      "concept_tags": ["productive-tension", "dialectical-insights"]
     }
   ]
 }
 
-CRITICAL REQUIREMENTS:
-- MUST quote or reference specific statements from the conversation above
-- MUST analyze their actual arguments, not generic philosophical positions
-- MUST return valid JSON only - no markdown, explanations, or code blocks
-- Use \\n for line breaks, escape quotes with \\"
-- Exactly 3 syntheses: "resolution", "transcendence", "paradox"
-- Each 250-350 words of specific analysis
+Requirements:
+- Each content must be 200-300 words
+- Reference specific arguments they actually made
+- Use actual quotes or paraphrases from the conversation
+- Make the insights specific to THIS exchange, not general philosophy
+- Return ONLY the JSON object with no additional text`
 
-If you give me generic philosophy instead of analyzing THEIR actual conversation, that's a failure. I need insights that could only come from reading what these specific thinkers actually said to each other.
+  // Try multiple approaches to get high-quality syntheses
+  const strategies = [
+    // Strategy 1: Direct JSON request
+    async () => {
+      const model = getSynthesisModel()
+      const result = await model.generateContent(prompt)
+      return result.response.text()
+    },
 
-Respond with ONLY the JSON object:`
+    // Strategy 2: Simpler prompt if the first fails
+    async () => {
+      const model = getSynthesisModel()
+      const simplePrompt = `Analyze the debate between ${fighter1.name} and ${fighter2.name} about "${thesis}". Return JSON with 3 syntheses: resolution, transcendence, paradox. Each needs title, type, content (200+ words), concept_tags array.`
+      const result = await model.generateContent(simplePrompt)
+      return result.response.text()
+    },
 
-  const model = getSynthesisModel()
-  
-  try {
-    const result = await model.generateContent(prompt)
-    const response = result.response.text()
+    // Strategy 3: Very explicit JSON request
+    async () => {
+      const model = getSynthesisModel()
+      const explicitPrompt = `Generate a JSON response about the debate between ${fighter1.name} and ${fighter2.name}.
 
-    // Aggressively clean and repair the JSON response
-    let cleaned = response.trim()
+Start your response with { and end with }
 
-    // Remove markdown code blocks and any explanatory text
-    cleaned = cleaned.replace(/```json\s*/gi, '')
-    cleaned = cleaned.replace(/```\s*/g, '')
-    cleaned = cleaned.replace(/^[^{]*/, '') // Remove any text before first {
-    cleaned = cleaned.replace(/[^}]*$/, '}') // Ensure it ends with }
+Format:
+{
+  "syntheses": [
+    {"title": "Title 1", "type": "resolution", "content": "Content 1", "concept_tags": ["tag1", "tag2"]},
+    {"title": "Title 2", "type": "transcendence", "content": "Content 2", "concept_tags": ["tag3", "tag4"]},
+    {"title": "Title 3", "type": "paradox", "content": "Content 3", "concept_tags": ["tag5", "tag6"]}
+  ]
+}`
+      const result = await model.generateContent(explicitPrompt)
+      return result.response.text()
+    },
 
-    // Find the JSON object boundaries more carefully
-    const firstBrace = cleaned.indexOf('{')
-    const lastBrace = cleaned.lastIndexOf('}')
+    // Strategy 4: Give up on JSON and construct it programmatically
+    async () => {
+      const model = getSynthesisModel()
+      const textPrompt = `Analyze the debate between ${fighter1.name} and ${fighter2.name} about "${thesis}".
 
-    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-      cleaned = cleaned.substring(firstBrace, lastBrace + 1)
+Write exactly 3 analyses:
+
+1. RESOLUTION: How their approaches complement each other
+2. TRANSCENDENCE: What deeper framework emerged
+3. PARADOX: Why their disagreement was productive
+
+Each analysis should be 200-300 words and reference specific things they said.`
+
+      const result = await model.generateContent(textPrompt)
+      const text = result.response.text()
+
+      console.log('Strategy 4 text response:', text.substring(0, 300))
+
+      // Parse the text response and construct JSON manually
+      // Try multiple parsing approaches
+      let sections: string[] = []
+
+      // Approach 1: Split by numbered sections
+      sections = text.split(/(?:^|\n)\s*[123]\.\s*/m)
+        .filter(s => s.trim().length > 50)
+        .slice(1, 4) // Skip first empty element
+
+      // Approach 2: Split by keywords if numbered approach didn't work
+      if (sections.length < 3) {
+        sections = text.split(/(?:RESOLUTION|TRANSCENDENCE|PARADOX):\s*/i)
+          .filter(s => s.trim().length > 50)
+          .slice(1, 4) // Skip first element which is usually intro text
+      }
+
+      // Approach 3: Split by paragraphs if we still don't have enough
+      if (sections.length < 3) {
+        const paragraphs = text.split(/\n\s*\n/)
+          .filter(p => p.trim().length > 100)
+
+        if (paragraphs.length >= 3) {
+          sections = paragraphs.slice(0, 3)
+        }
+      }
+
+      console.log(`Strategy 4 found ${sections.length} sections`)
+
+      if (sections.length >= 3) {
+        return JSON.stringify({
+          syntheses: [
+            {
+              title: `${fighter1.name.split(' ').pop()} and ${fighter2.name.split(' ').pop()}: Complementary approaches`,
+              type: "resolution",
+              content: sections[0].trim(),
+              concept_tags: extractConversationThemes(conversationHistory)
+            },
+            {
+              title: `Beyond the debate: Deeper framework revealed`,
+              type: "transcendence",
+              content: sections[1].trim(),
+              concept_tags: ["meta-philosophy", "framework-thinking"]
+            },
+            {
+              title: `The productive tension in their disagreement`,
+              type: "paradox",
+              content: sections[2].trim(),
+              concept_tags: ["productive-conflict", "dialectical-method"]
+            }
+          ]
+        })
+      }
+
+      throw new Error(`Could not parse text response into sections (found ${sections.length})`)
     }
+  ]
 
-    // Fix common JSON syntax errors
-    cleaned = fixCommonJsonErrors(cleaned)
-
-    // Try to parse the JSON
-    let parsed: any
+  for (let i = 0; i < strategies.length; i++) {
     try {
-      parsed = JSON.parse(cleaned)
-    } catch (parseError) {
-      // Initial parse failed, attempting repair
-      // Try more aggressive repairs
-      cleaned = repairJsonStructure(cleaned)
-      parsed = JSON.parse(cleaned)
+      console.log(`🎯 Attempting synthesis generation strategy ${i + 1}`)
+      const response = await strategies[i]()
+
+      console.log('Raw synthesis response:', response.substring(0, 500) + (response.length > 500 ? '...' : ''))
+      console.log('Full response length:', response.length)
+
+      // Clean and parse JSON response
+      let cleaned = response.trim()
+
+      // Remove any markdown code blocks or explanatory text
+      cleaned = cleaned.replace(/```json\s*/gi, '')
+      cleaned = cleaned.replace(/```\s*/g, '')
+      cleaned = cleaned.replace(/^[^{]*({[\s\S]*})[^}]*$/, '$1') // Extract JSON object with regex
+
+      // Try multiple approaches to find JSON
+      let jsonFound = false;
+
+      // Approach 1: Look for complete JSON object
+      let jsonMatch = cleaned.match(/{[\s\S]*}/);
+      if (jsonMatch) {
+        cleaned = jsonMatch[0];
+        jsonFound = true;
+      }
+
+      // Approach 2: Look for partial JSON and try to reconstruct
+      if (!jsonFound) {
+        const synthesesMatch = cleaned.match(/"syntheses"\s*:\s*\[[\s\S]*\]/);
+        if (synthesesMatch) {
+          cleaned = `{${synthesesMatch[0]}}`;
+          jsonFound = true;
+        }
+      }
+
+      // Approach 3: Check if response looks like JSON but is missing braces
+      if (!jsonFound && (cleaned.includes('"syntheses"') || cleaned.includes('"title"'))) {
+        // Try wrapping in braces
+        if (!cleaned.startsWith('{')) cleaned = '{' + cleaned;
+        if (!cleaned.endsWith('}')) cleaned = cleaned + '}';
+        jsonFound = true;
+      }
+
+      if (!jsonFound) {
+        console.log(`❌ Strategy ${i + 1}: No JSON pattern found in response`);
+        console.log('Cleaned response:', cleaned.substring(0, 200));
+        continue; // Try next strategy
+      }
+
+      // Fix common JSON syntax errors
+      cleaned = fixCommonJsonErrors(cleaned)
+
+      let parsed: any
+      try {
+        parsed = JSON.parse(cleaned)
+      } catch (parseError) {
+        console.log(`JSON parse error in strategy ${i + 1}:`, parseError, 'Cleaned text length:', cleaned.length)
+
+        // Try aggressive repair for truncated JSON
+        try {
+          cleaned = repairJsonStructure(cleaned)
+          parsed = JSON.parse(cleaned)
+        } catch (repairError) {
+          console.log(`❌ Strategy ${i + 1}: Standard JSON repair failed, trying truncation recovery`)
+
+          // If it's likely a truncation issue, try to salvage what we can
+          try {
+            // Look for complete synthesis objects and extract them
+            const synthesesMatch = cleaned.match(/"syntheses":\s*\[([\s\S]*)/)
+            if (synthesesMatch) {
+              let synthesesContent = synthesesMatch[1]
+
+              // Find complete synthesis objects (those ending with })
+              const objects = []
+              let currentObj = ''
+              let braceCount = 0
+              let inString = false
+              let escaped = false
+
+              for (let j = 0; j < synthesesContent.length; j++) {
+                const char = synthesesContent[j]
+                currentObj += char
+
+                if (escaped) {
+                  escaped = false
+                  continue
+                }
+
+                if (char === '\\') {
+                  escaped = true
+                  continue
+                }
+
+                if (char === '"') {
+                  inString = !inString
+                  continue
+                }
+
+                if (!inString) {
+                  if (char === '{') braceCount++
+                  if (char === '}') {
+                    braceCount--
+                    if (braceCount === 0) {
+                      objects.push(currentObj.trim().replace(/,$/, ''))
+                      currentObj = ''
+                    }
+                  }
+                }
+              }
+
+              if (objects.length > 0) {
+                const validJson = `{"syntheses": [${objects.join(', ')}]}`
+                parsed = JSON.parse(validJson)
+                console.log(`✅ Strategy ${i + 1}: Recovered ${objects.length} syntheses from truncated JSON`)
+              } else {
+                throw new Error('No complete synthesis objects found')
+              }
+            } else {
+              throw new Error('No syntheses array found in truncated JSON')
+            }
+          } catch (truncationError) {
+            console.log(`❌ Strategy ${i + 1}: Truncation recovery failed`)
+            continue; // Try next strategy
+          }
+        }
+      }
+
+      const syntheses = parsed.syntheses || []
+
+      // Validate synthesis quality
+      if (syntheses.length >= 3 &&
+          syntheses.every((s: any) =>
+            s.title && s.content && s.type && s.concept_tags &&
+            s.title.length > 10 &&
+            s.content.length > 100 &&
+            !s.title.includes('placeholder') &&
+            !s.title.includes('example') &&
+            ['resolution', 'transcendence', 'paradox'].includes(s.type)
+          )) {
+        console.log(`✅ Strategy ${i + 1}: High-quality syntheses generated successfully`)
+        return syntheses
+      }
+
+      console.log(`⚠️ Strategy ${i + 1}: Generated syntheses failed quality check`)
+
+    } catch (error) {
+      console.log(`❌ Strategy ${i + 1} failed:`, error)
+      continue; // Try next strategy
     }
-
-    const syntheses = parsed.syntheses || []
-
-    // Validate we got actual syntheses with meaningful content
-    if (syntheses.length > 0 &&
-        syntheses[0].title &&
-        syntheses[0].title !== 'Compelling 8-12 word title' &&
-        syntheses[0].title !== 'A compelling 8-12 word insight title' &&
-        syntheses[0].content &&
-        syntheses[0].content.length > 100) {
-      return syntheses
-    }
-
-    // If we got template/placeholder response, fall through to fallback
-    throw new Error('Template response received')
-
-  } catch (error) {
-    // Synthesis generation failed, using analytical fallback
-
-    // Generate a much better fallback that actually analyzes the conversation
-    return generateAnalyticalFallbackSyntheses(conversationHistory, thesis, fighter1, fighter2)
   }
+
+  // All strategies failed, use enhanced analytical fallback
+  console.log('🔄 All synthesis generation strategies failed, using enhanced analytical fallback')
+  return generateAnalyticalFallbackSyntheses(conversationHistory, thesis, fighter1, fighter2)
 }
