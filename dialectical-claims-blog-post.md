@@ -61,3 +61,35 @@ Whether this particular technological implementation proves viable matters less 
 ---
 
 *Dialectical.Claims is available at [dialectical.claims](https://dialectical.claims). The source code is open. The ideas are free.*
+
+---
+
+## Social Media Copy
+
+### Twitter/X Post
+
+What if philosophy was designed for intellectual combat rather than academic gatekeeping?
+
+I built Dialectical.Claims - computational infrastructure where AI-powered Foucault debates Beauvoir, ideas develop through encounter, and disagreement becomes generative rather than destructive.
+
+dialectical.claims
+
+#philosophy #AI #thinking
+
+---
+
+### LinkedIn Post
+
+**Rethinking Intellectual Infrastructure: When Philosophy Meets Computation**
+
+The contemporary crisis in public discourse isn't about platforms—it's about the fundamental structures through which ideas encounter each other. We've built systems that optimize for engagement rather than understanding.
+
+I've been experimenting with an alternative: Dialectical.Claims, computational infrastructure designed specifically for dialectical thinking. 70+ AI-powered philosophical agents engage in structured intellectual combat, with real-time synthesis generation that identifies productive tensions rather than declaring winners.
+
+This isn't about making philosophy "accessible"—it's about designing technology that preserves intellectual rigor while escaping institutional constraints. No paywalls, no credentials required, no algorithmic curation based on previous behavior.
+
+Early results suggest something interesting: complex thinking can emerge directly from encounter with ideas rather than through credentialed mediation. The question is whether computational systems can support sustained dialectical development at scale.
+
+The project is live at dialectical.claims. Source code is open. Curious to hear thoughts from others working at the intersection of technology and intellectual culture.
+
+#Philosophy #AI #IntellectualCulture #Technology #OpenSource
