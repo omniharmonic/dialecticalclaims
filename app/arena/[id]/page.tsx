@@ -25,7 +25,7 @@ export default async function ArenaPage({ params }: { params: { id: string } }) 
   let rounds: { round_number: number; fighter1_response: string; fighter2_response: string }[] = []
   let syntheses: any[] = []
 
-  if (dialectic.status === 'complete' || dialectic.archived_at) {
+  if (dialectic!.status === 'complete' || dialectic!.archived_at) {
     // Fetch rounds
     const { data: roundsData } = await supabase
       .from('rounds')
@@ -45,7 +45,7 @@ export default async function ArenaPage({ params }: { params: { id: string } }) 
 
   // Add the data to the dialectic object
   const dialecticWithData = {
-    ...dialectic,
+    ...dialectic!,
     rounds,
     syntheses
   }
