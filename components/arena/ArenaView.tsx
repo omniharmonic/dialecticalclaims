@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { getFighterImageUrl } from '@/lib/fighter-images'
+import ReactMarkdown from 'react-markdown'
 
 // Utility function to generate markdown content
 function generateMarkdownContent(
@@ -14,7 +15,8 @@ function generateMarkdownContent(
   currentRound: number,
   currentFighter1Text: string,
   currentFighter2Text: string,
-  syntheses: Synthesis[]
+  syntheses: Synthesis[],
+  synthesisClaimText?: string
 ): string {
   const date = new Date().toLocaleDateString()
 
@@ -34,7 +36,16 @@ ${dialectic.fighter2.era} | ${dialectic.fighter2.tradition.join(', ')}
 
 ---
 
-## Dialectical Exchange
+${synthesisClaimText ? `
+## Core Insight
+
+> "${synthesisClaimText}"
+
+*Synthesized from the dialectical exchange between ${dialectic.fighter1.name} and ${dialectic.fighter2.name}*
+
+---
+
+` : ''}## Dialectical Exchange
 
 `
 
@@ -113,6 +124,8 @@ interface ArenaViewProps {
   dialectic: Dialectic & {
     fighter1: Fighter
     fighter2: Fighter
+    rounds?: { round_number: number; fighter1_response: string; fighter2_response: string }[]
+    syntheses?: Synthesis[]
   }
 }
 
@@ -131,18 +144,54 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
   const [status, setStatus] = useState<'streaming' | 'complete' | 'error'>('streaming')
   const [streamingFighter, setStreamingFighter] = useState<1 | 2 | null>(null)
   const [errorMessage, setErrorMessage] = useState<string>('')
-  const bottomRef = useRef<HTMLDivElement>(null)
-  
+  const [synthesisClaimText, setSynthesisClaimText] = useState<string>('')
+
+  // Archive functionality
+  const [isArchiving, setIsArchiving] = useState(false)
+  const [isArchived, setIsArchived] = useState(false)
+
+  // Removed typing animation state as we're using real-time streaming
+
   // Refs to track current text (avoids closure issues)
   const fighter1TextRef = useRef('')
   const fighter2TextRef = useRef('')
+  const streamingFighterRef = useRef<1 | 2 | null>(null)
 
-  // Auto-scroll to bottom when new content arrives
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [currentFighter1Text, currentFighter2Text, rounds, syntheses])
+  // Removed auto-scroll behavior for natural flow
 
   useEffect(() => {
+    // Check if we have pre-loaded conversation data (for completed/archived dialectics)
+    const hasPreloadedData = dialectic.rounds && dialectic.rounds.length > 0
+
+    if (hasPreloadedData) {
+      // Load pre-loaded conversation data without streaming
+      const formattedRounds = dialectic.rounds!.map(round => ({
+        fighter1Text: round.fighter1_response || '',
+        fighter2Text: round.fighter2_response || ''
+      }))
+
+      setRounds(formattedRounds)
+      setCurrentRound(dialectic.round_count || formattedRounds.length)
+
+      // Load syntheses if available
+      if (dialectic.syntheses && dialectic.syntheses.length > 0) {
+        setSyntheses(dialectic.syntheses)
+
+        // Extract synthesis claim from the first synthesis that has one
+        const synthesisWithClaim = dialectic.syntheses.find((s: any) => s.synthesis_claim)
+        if (synthesisWithClaim?.synthesis_claim) {
+          setSynthesisClaimText(synthesisWithClaim.synthesis_claim)
+        }
+      }
+
+      // Set status as complete since this is archived data
+      setStatus('complete')
+      setIsArchived(!!dialectic.archived_at)
+
+      return // Skip SSE streaming for archived dialectics
+    }
+
+    // Original SSE streaming logic for live dialectics
     const eventSource = new EventSource(`/api/dialectics/${dialectic.id}/stream`)
 
       eventSource.addEventListener('status', (e) => {
@@ -153,36 +202,54 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
     eventSource.addEventListener('round-start', (e) => {
       const data = JSON.parse(e.data)
       setCurrentRound(data.roundNumber)
-      // Reset refs and state
+      // Reset refs and state for new round
       fighter1TextRef.current = ''
       fighter2TextRef.current = ''
       setCurrentFighter1Text('')
       setCurrentFighter2Text('')
       setStreamingFighter(1)
+      streamingFighterRef.current = 1
     })
 
     eventSource.addEventListener('fighter1-chunk', (e) => {
       const data = JSON.parse(e.data)
       fighter1TextRef.current += data.chunk
-      setCurrentFighter1Text((prev) => prev + data.chunk)
+      setCurrentFighter1Text(fighter1TextRef.current)
+      // Ensure we're showing fighter 1 as streaming
+      if (streamingFighterRef.current !== 1) {
+        setStreamingFighter(1)
+        streamingFighterRef.current = 1
+      }
     })
 
     eventSource.addEventListener('fighter2-chunk', (e) => {
       const data = JSON.parse(e.data)
       fighter2TextRef.current += data.chunk
-      setCurrentFighter2Text((prev) => prev + data.chunk)
-      setStreamingFighter(2)
+      setCurrentFighter2Text(fighter2TextRef.current)
+      // Switch to fighter 2 streaming when first chunk arrives
+      if (streamingFighterRef.current !== 2) {
+        setStreamingFighter(2)
+        streamingFighterRef.current = 2
+      }
     })
 
     eventSource.addEventListener('round-complete', (e) => {
       const data = JSON.parse(e.data)
-      // Use refs to get the current text values (avoids stale closure)
+
+      // Complete the round and stop streaming
+      setStreamingFighter(null)
+      streamingFighterRef.current = null
+
+      // Add the completed round to history
       const newRound = {
         fighter1Text: fighter1TextRef.current,
         fighter2Text: fighter2TextRef.current,
       }
       setRounds((prev) => [...prev, newRound])
-      setStreamingFighter(null)
+
+      // Clear current texts for next round
+      setCurrentFighter1Text('')
+      setCurrentFighter2Text('')
     })
 
       eventSource.addEventListener('synthesis-start', () => {
@@ -192,6 +259,12 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
     eventSource.addEventListener('synthesis-complete', (e) => {
       const data = JSON.parse(e.data)
       setSyntheses(data.syntheses)
+
+      // Extract synthesis claim from the first synthesis that has one
+      const synthesisWithClaim = data.syntheses?.find((s: any) => s.synthesis_claim)
+      if (synthesisWithClaim?.synthesis_claim) {
+        setSynthesisClaimText(synthesisWithClaim.synthesis_claim)
+      }
     })
 
     eventSource.addEventListener('complete', () => {
@@ -220,7 +293,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
           // Use default message
         }
       }
-      
+
       setErrorMessage(message)
       setStatus('error')
       eventSource.close()
@@ -229,7 +302,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
     return () => {
       eventSource.close()
     }
-  }, [dialectic.id])
+  }, [dialectic.id, dialectic.rounds, dialectic.syntheses, dialectic.archived_at])
 
   // Handle export to markdown
   const handleExportMarkdown = () => {
@@ -239,7 +312,8 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
       currentRound,
       currentFighter1Text,
       currentFighter2Text,
-      syntheses
+      syntheses,
+      synthesisClaimText
     )
 
     const fighter1LastName = dialectic.fighter1.name.split(' ').pop()
@@ -247,6 +321,31 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
     const filename = `dialectical-exchange-${fighter1LastName}-vs-${fighter2LastName}-${new Date().toISOString().split('T')[0]}.md`
 
     downloadMarkdown(content, filename)
+  }
+
+  // Handle archiving dialectic
+  const handleArchive = async () => {
+    if (isArchiving || isArchived) return
+
+    setIsArchiving(true)
+    try {
+      const response = await fetch(`/api/dialectics/${dialectic.id}/archive`, {
+        method: 'POST',
+      })
+
+      if (response.ok) {
+        setIsArchived(true)
+      } else {
+        const error = await response.json()
+        console.error('Failed to archive dialectic:', error)
+        alert('Failed to archive dialectic. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error archiving dialectic:', error)
+      alert('An error occurred while archiving. Please try again.')
+    } finally {
+      setIsArchiving(false)
+    }
   }
 
   return (
@@ -392,8 +491,10 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
                       {dialectic.fighter1.name.toUpperCase()}
                     </h3>
                   </div>
-                  <div className="philosophical-text whitespace-pre-wrap text-foreground/90 leading-relaxed">
-                    {round.fighter1Text}
+                  <div className="philosophical-text text-foreground/90 leading-relaxed prose prose-invert max-w-none">
+                    <ReactMarkdown>
+                      {round.fighter1Text}
+                    </ReactMarkdown>
                   </div>
                 </Card>
               </div>
@@ -409,8 +510,10 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
                       {dialectic.fighter2.name.toUpperCase()}
                     </h3>
                   </div>
-                  <div className="philosophical-text whitespace-pre-wrap text-foreground/90 leading-relaxed">
-                    {round.fighter2Text}
+                  <div className="philosophical-text text-foreground/90 leading-relaxed prose prose-invert max-w-none">
+                    <ReactMarkdown>
+                      {round.fighter2Text}
+                    </ReactMarkdown>
                   </div>
                 </Card>
               </div>
@@ -425,7 +528,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
               <span className="text-xs">━━━ ROUND {currentRound} ━━━</span>
             </div>
 
-            {currentFighter1Text && (
+            {(streamingFighter === 1 || currentFighter1Text) && (
               <div className="relative">
                 <div className="absolute inset-0 bg-blue-500/30 blur-xl animate-pulse" />
                 <Card className="relative p-4 md:p-6 bg-gradient-to-br from-blue-950/40 to-card border-2 border-blue-500/60 animate-border-pulse">
@@ -436,21 +539,26 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
                     </h3>
                     {streamingFighter === 1 && (
                       <span className="text-xs text-blue-400 ml-2" style={{fontFamily: '"Press Start 2P", cursive'}}>
-                        ⚡ LIVE
+                        ⚡ GENERATING
                       </span>
                     )}
                   </div>
-                  <div className="philosophical-text whitespace-pre-wrap text-foreground/90 leading-relaxed">
-                    {currentFighter1Text}
-                    {streamingFighter === 1 && (
-                      <span className="streaming-text" />
+                  <div className="philosophical-text text-foreground/90 leading-relaxed">
+                    {currentFighter1Text ? (
+                      <div className="prose prose-invert max-w-none">
+                        <ReactMarkdown>
+                          {currentFighter1Text}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <span className="opacity-70">Generating response...</span>
                     )}
                   </div>
                 </Card>
               </div>
             )}
 
-            {currentFighter2Text && (
+            {(streamingFighter === 2 || currentFighter2Text) && (
               <div className="relative">
                 <div className="absolute inset-0 bg-red-500/30 blur-xl animate-pulse" />
                 <Card className="relative p-4 md:p-6 bg-gradient-to-br from-red-950/40 to-card border-2 border-red-500/60 animate-border-pulse">
@@ -461,14 +569,19 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
                     </h3>
                     {streamingFighter === 2 && (
                       <span className="text-xs text-red-400 ml-2" style={{fontFamily: '"Press Start 2P", cursive'}}>
-                        ⚡ LIVE
+                        ⚡ GENERATING
                       </span>
                     )}
                   </div>
-                  <div className="philosophical-text whitespace-pre-wrap text-foreground/90 leading-relaxed">
-                    {currentFighter2Text}
-                    {streamingFighter === 2 && (
-                      <span className="streaming-text" />
+                  <div className="philosophical-text text-foreground/90 leading-relaxed">
+                    {currentFighter2Text ? (
+                      <div className="prose prose-invert max-w-none">
+                        <ReactMarkdown>
+                          {currentFighter2Text}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <span className="opacity-70">Generating response...</span>
                     )}
                   </div>
                 </Card>
@@ -493,6 +606,28 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
               {syntheses.length} emergent integration{syntheses.length > 1 ? 's' : ''} discovered
             </p>
           </div>
+
+          {/* Main Synthesis Claim */}
+          {synthesisClaimText && (
+            <div className="relative group max-w-4xl mx-auto mb-12">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20 blur-xl opacity-75" />
+              <Card className="relative p-6 md:p-8 bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/40 hover:border-primary/60 transition-all">
+                <div className="text-center space-y-4">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 rounded-full">
+                    <span className="text-primary font-bold text-sm" style={{fontFamily: '"Press Start 2P", cursive'}}>
+                      ⚡ CORE INSIGHT ⚡
+                    </span>
+                  </div>
+                  <blockquote className="text-lg md:text-xl font-medium italic text-center leading-relaxed">
+                    &ldquo;{synthesisClaimText}&rdquo;
+                  </blockquote>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Synthesized from {dialectic.fighter1.name} vs {dialectic.fighter2.name}
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
 
           <div className="grid gap-8">
             {syntheses.map((synthesis, index) => (
@@ -539,8 +674,10 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
                     </div>
                   </div>
                   
-                  <div className="philosophical-text mb-4 sm:mb-6 whitespace-pre-wrap text-foreground/90 leading-relaxed border-l-2 sm:border-l-4 border-primary/30 pl-3 sm:pl-4 text-sm sm:text-base">
-                    {synthesis.content}
+                  <div className="philosophical-text mb-4 sm:mb-6 text-foreground/90 leading-relaxed border-l-2 sm:border-l-4 border-primary/30 pl-3 sm:pl-4 text-sm sm:text-base prose prose-invert max-w-none">
+                    <ReactMarkdown>
+                      {synthesis.content}
+                    </ReactMarkdown>
                   </div>
                   
                   <div className="flex flex-wrap gap-2 pt-4 border-t border-border/30">
@@ -563,7 +700,7 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
 
       {/* Status */}
       {status === 'complete' && (
-        <div className="text-center py-8 space-y-4">
+        <div className="text-center py-8 space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -575,14 +712,57 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
             Dialectic Complete
           </div>
 
-          {/* Export Button */}
-          <button
-            onClick={handleExportMarkdown}
-            className="btn btn-primary px-6 py-3 text-base flex items-center gap-3 mx-auto hover:scale-105 transition-transform"
-          >
-            <span>📄</span>
-            <span>Export Full Exchange to Markdown</span>
-          </button>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
+            {/* Export Button */}
+            <button
+              onClick={handleExportMarkdown}
+              className="btn btn-primary px-6 py-3 text-base flex items-center gap-3 hover:scale-105 transition-transform"
+            >
+              <span>📄</span>
+              <span>Export to Markdown</span>
+            </button>
+
+            {/* Archive Button */}
+            {!isArchived && (
+              <button
+                onClick={handleArchive}
+                disabled={isArchiving}
+                className="btn btn-outline px-6 py-3 text-base flex items-center gap-3 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isArchiving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span>Archiving...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>🏛️</span>
+                    <span>Archive Synthesis</span>
+                  </>
+                )}
+              </button>
+            )}
+
+            {isArchived && (
+              <div className="flex items-center gap-2 px-6 py-3 text-base bg-accent/20 text-accent rounded-lg">
+                <span>✅</span>
+                <span>Archived Successfully</span>
+              </div>
+            )}
+          </div>
+
+          {/* Archive Explanation */}
+          {!isArchived && syntheses.length > 0 && (
+            <div className="max-w-2xl mx-auto p-4 bg-muted/20 rounded-lg border border-border/50">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Found this dialectical exchange meaningful? Archive it to add it to the public
+                <strong className="text-foreground"> Synthesis Archive</strong> where others can explore
+                the insights that emerged from this philosophical dialogue. Archived exchanges help build
+                a collective repository of dialectical wisdom.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -607,9 +787,6 @@ export function ArenaView({ dialectic }: ArenaViewProps) {
           </div>
         </div>
       )}
-
-      {/* Scroll anchor */}
-      <div ref={bottomRef} />
     </div>
   )
 }

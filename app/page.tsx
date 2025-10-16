@@ -29,13 +29,20 @@ export default function HomePage() {
             collide, and transcend—with you as the <span className="text-accent font-bold">choreographer of consciousness</span> itself.
           </p>
 
-          <div className="flex justify-center mb-12">
-            <Link 
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-12">
+            <Link
               href="/fighters"
               className="btn btn-primary text-sm sm:text-base px-8 sm:px-12 py-4 sm:py-6 group relative overflow-hidden"
             >
               <span className="relative z-10">⚔️ ENTER ARENA ⚔️</span>
               <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+            </Link>
+
+            <Link
+              href="/archive"
+              className="btn btn-outline text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 group relative overflow-hidden hover:bg-primary/10"
+            >
+              <span className="relative z-10">🏛️ SYNTHESIS ARCHIVE</span>
             </Link>
           </div>
           

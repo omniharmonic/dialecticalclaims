@@ -158,26 +158,49 @@ function generateAnalyticalFallbackSyntheses(
   const transcendenceContent = generateTranscendenceContent(fighter1, fighter2, thesis, themes, centralConcepts, analysis.engagements)
   const paradoxContent = generateParadoxContent(fighter1, fighter2, thesis, themes, analysis.totalExchanges)
 
-  return [
-    {
-      title: resolutionTitle,
-      type: 'resolution',
-      content: resolutionContent,
-      concept_tags: themes.concat(['complementary-perspectives', 'dialectical-synthesis', 'philosophical-dialogue']),
-    },
-    {
-      title: transcendenceTitle,
-      type: 'transcendence',
-      content: transcendenceContent,
-      concept_tags: themes.concat(['meta-philosophy', 'framework-thinking', 'transcendent-understanding']),
-    },
-    {
-      title: paradoxTitle,
-      type: 'paradox',
-      content: paradoxContent,
-      concept_tags: themes.concat(['productive-conflict', 'philosophical-method', 'necessary-tension', 'collaborative-disagreement']),
-    }
+  // Generate synthesis claim
+  const synthesisClaimOptions = [
+    `${fighter1.name} and ${fighter2.name} show that ${keyTerms[0] || 'truth'} emerges through thoughtful disagreement.`,
+    `True philosophical progress requires both ${fighter1.name.split(' ').pop()}'s ${themes[0] || 'insights'} and ${fighter2.name.split(' ').pop()}'s challenges.`,
+    `The tension between ${fighter1.name.split(' ').pop()}'s and ${fighter2.name.split(' ').pop()}'s views reveals deeper wisdom about ${centralConcepts[0] || 'human understanding'}.`
   ]
+
+  const synthesisClaimData = {
+    synthesis_claim: synthesisClaimOptions[0].length <= 150 ? synthesisClaimOptions[0] :
+                    synthesisClaimOptions[1].length <= 150 ? synthesisClaimOptions[1] :
+                    synthesisClaimOptions[2].substring(0, 147) + '...',
+    syntheses: [
+      {
+        title: resolutionTitle,
+        type: 'resolution',
+        content: resolutionContent,
+        synthesis_claim: synthesisClaimOptions[0].length <= 150 ? synthesisClaimOptions[0] :
+                        synthesisClaimOptions[1].length <= 150 ? synthesisClaimOptions[1] :
+                        synthesisClaimOptions[2].substring(0, 147) + '...',
+        concept_tags: themes.concat(['complementary-perspectives', 'dialectical-synthesis', 'philosophical-dialogue']),
+      },
+      {
+        title: transcendenceTitle,
+        type: 'transcendence',
+        content: transcendenceContent,
+        synthesis_claim: synthesisClaimOptions[0].length <= 150 ? synthesisClaimOptions[0] :
+                        synthesisClaimOptions[1].length <= 150 ? synthesisClaimOptions[1] :
+                        synthesisClaimOptions[2].substring(0, 147) + '...',
+        concept_tags: themes.concat(['meta-philosophy', 'framework-thinking', 'transcendent-understanding']),
+      },
+      {
+        title: paradoxTitle,
+        type: 'paradox',
+        content: paradoxContent,
+        synthesis_claim: synthesisClaimOptions[0].length <= 150 ? synthesisClaimOptions[0] :
+                        synthesisClaimOptions[1].length <= 150 ? synthesisClaimOptions[1] :
+                        synthesisClaimOptions[2].substring(0, 147) + '...',
+        concept_tags: themes.concat(['productive-conflict', 'philosophical-method', 'necessary-tension', 'collaborative-disagreement']),
+      }
+    ]
+  }
+
+  return synthesisClaimData.syntheses
 }
 
 function generateResolutionContent(fighter1: Fighter, fighter2: Fighter, thesis: string, themes: string[], fighter1Content: string, fighter2Content: string, keyTerms: string[]): string {
@@ -656,12 +679,13 @@ async function generateSyntheses(options: GenerateSynthesesOptions): Promise<any
 CONVERSATION TRANSCRIPT:
 ${conversationHistory.join('\n\n')}
 
-Your task: Generate exactly 3 syntheses analyzing their actual exchange. Each synthesis must reference specific arguments they made.
+Your task: Generate exactly 3 syntheses analyzing their actual exchange PLUS a single overarching synthesis claim. Each synthesis must reference specific arguments they made.
 
 CRITICAL: You must respond with ONLY a JSON object. No explanatory text before or after. No markdown formatting. Just pure JSON.
 
 Required JSON format:
 {
+  "synthesis_claim": "A single, powerful sentence that captures the core insight emerging from this specific dialectical exchange between ${fighter1.name} and ${fighter2.name}",
   "syntheses": [
     {
       "title": "Title describing how their specific approaches complement each other",
@@ -685,7 +709,8 @@ Required JSON format:
 }
 
 Requirements:
-- Each content must be 200-300 words
+- synthesis_claim must be ONE sentence, maximum 150 characters, capturing the essence of what emerged
+- Each synthesis content must be 200-300 words
 - Reference specific arguments they actually made
 - Use actual quotes or paraphrases from the conversation
 - Make the insights specific to THIS exchange, not general philosophy
@@ -1002,6 +1027,14 @@ Focus on what actually happened in their exchange, not general philosophy.`
       }
 
       const syntheses = parsed.syntheses || []
+      const synthesisClaimFromApi = parsed.synthesis_claim || null
+
+      // Add synthesis_claim to each synthesis object if it exists
+      if (synthesisClaimFromApi && syntheses.length > 0) {
+        syntheses.forEach((synthesis: any) => {
+          synthesis.synthesis_claim = synthesisClaimFromApi
+        })
+      }
 
       // Validate synthesis quality
       if (syntheses.length >= 3 &&

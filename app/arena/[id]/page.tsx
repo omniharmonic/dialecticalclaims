@@ -21,9 +21,38 @@ export default async function ArenaPage({ params }: { params: { id: string } }) 
     notFound()
   }
 
+  // For completed/archived dialectics, fetch the rounds and syntheses data
+  let rounds = []
+  let syntheses = []
+
+  if (dialectic.status === 'complete' || dialectic.archived_at) {
+    // Fetch rounds
+    const { data: roundsData } = await supabase
+      .from('rounds')
+      .select('round_number, fighter1_response, fighter2_response')
+      .eq('dialectic_id', params.id)
+      .order('round_number', { ascending: true })
+
+    // Fetch syntheses
+    const { data: synthesesData } = await supabase
+      .from('syntheses')
+      .select('*')
+      .eq('dialectic_id', params.id)
+
+    rounds = roundsData || []
+    syntheses = synthesesData || []
+  }
+
+  // Add the data to the dialectic object
+  const dialecticWithData = {
+    ...dialectic,
+    rounds,
+    syntheses
+  }
+
   return (
     <div className="arena-container min-h-screen">
-      <ArenaView dialectic={dialectic} />
+      <ArenaView dialectic={dialecticWithData} />
     </div>
   )
 }

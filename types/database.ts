@@ -63,6 +63,7 @@ export type Database = {
           view_count: number
           created_at: string
           completed_at: string | null
+          archived_at: string | null
         }
         Insert: {
           id?: string
@@ -74,6 +75,7 @@ export type Database = {
           view_count?: number
           created_at?: string
           completed_at?: string | null
+          archived_at?: string | null
         }
         Update: {
           id?: string
@@ -85,6 +87,7 @@ export type Database = {
           view_count?: number
           created_at?: string
           completed_at?: string | null
+          archived_at?: string | null
         }
       }
       rounds: {
@@ -120,6 +123,7 @@ export type Database = {
           title: string
           type: 'resolution' | 'transcendence' | 'paradox' | 'subsumption'
           content: string
+          synthesis_claim: string | null
           concept_tags: string[]
           used_as_thesis_count: number
           created_at: string
@@ -130,6 +134,7 @@ export type Database = {
           title: string
           type: 'resolution' | 'transcendence' | 'paradox' | 'subsumption'
           content: string
+          synthesis_claim?: string | null
           concept_tags: string[]
           used_as_thesis_count?: number
           created_at?: string
@@ -140,6 +145,7 @@ export type Database = {
           title?: string
           type?: 'resolution' | 'transcendence' | 'paradox' | 'subsumption'
           content?: string
+          synthesis_claim?: string | null
           concept_tags?: string[]
           used_as_thesis_count?: number
           created_at?: string

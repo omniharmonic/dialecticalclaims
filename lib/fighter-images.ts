@@ -67,6 +67,46 @@ const FIGHTER_IMAGE_MAP: Record<string, string> = {
   // Religious & Historical Figures
   'Jesus of Nazareth': 'Jesus of Nazareth.png',
   'Benjamin Franklin': 'Benjamin Franklin.png',
+
+  // Environmental & Systems Thinkers
+  'Vandana Shiva': 'Vandana Shiva.png',
+  'Joanna Macy': 'Joanna Macy.png',
+
+  // Contemporary Philosophy & Consciousness
+  'John Vervaeke': 'John Vervaeke.png',
+  'Ken Wilber': 'Ken Wilber.png',
+  'Hanzi Freinacht': 'Hanzi Freinacht.png',
+  'Nora Bateson': 'Nora Bateson.png',
+
+  // Additional Literary & Speculative Voices
+  'Octavia Butler': 'Octavia Butler.png',
+
+  // Prison Abolition & Critical Theory
+  'Angela Davis': 'Angela Davis.png',
+
+  // Systems Thinking & Leverage Points
+  'Donella Meadows': 'Donella Meadows.png',
+  'Elinor Ostrom': 'Elinor Ostrom.png',
+  'Margaret Wheatley': 'Margaret Wheatley.png',
+
+  // Consciousness Evolution & Integral Ecology
+  'Jean Gebser': 'Jean Gebser.png',
+  'Adrienne Maree Brown': 'Adrienne Mariee Brown.png',
+
+  // African Cosmology & Decolonial Thought
+  'Bayo Akomolafe': 'Bayo Akomolafe.png',
+
+  // Sacred Economics & Gift Culture
+  'Charles Eisenstein': 'Charles Eisenstein.png',
+
+  // Mycorrhizal Wisdom & Ecological Storytelling
+  'Sophie Strand': 'Sophie Strand.png',
+
+  // Indigenous Science & Plant Wisdom
+  'Robin Wall Kimmerer': 'Robin Wall Kimmerer.png',
+
+  // Metacrisis & Civilization Design
+  'Daniel Schmachtenberger': 'Daniel Schmachtenberger.png',
 }
 
 /**
