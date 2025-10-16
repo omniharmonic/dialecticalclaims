@@ -21,11 +21,14 @@ export default async function ArenaPage({ params }: { params: { id: string } }) 
     notFound()
   }
 
+  // Force TypeScript to recognize the correct type with explicit type assertion
+  const validDialectic = dialectic as any
+
   // For completed/archived dialectics, fetch the rounds and syntheses data
   let rounds: { round_number: number; fighter1_response: string; fighter2_response: string }[] = []
   let syntheses: any[] = []
 
-  if (dialectic!.status === 'complete' || dialectic!.archived_at) {
+  if (validDialectic.status === 'complete' || validDialectic.archived_at) {
     // Fetch rounds
     const { data: roundsData } = await supabase
       .from('rounds')
@@ -45,7 +48,7 @@ export default async function ArenaPage({ params }: { params: { id: string } }) 
 
   // Add the data to the dialectic object
   const dialecticWithData = {
-    ...dialectic!,
+    ...validDialectic,
     rounds,
     syntheses
   }
