@@ -22,8 +22,8 @@ export default async function ArenaPage({ params }: { params: { id: string } }) 
   }
 
   // For completed/archived dialectics, fetch the rounds and syntheses data
-  let rounds = []
-  let syntheses = []
+  let rounds: { round_number: number; fighter1_response: string; fighter2_response: string }[] = []
+  let syntheses: any[] = []
 
   if (dialectic.status === 'complete' || dialectic.archived_at) {
     // Fetch rounds
